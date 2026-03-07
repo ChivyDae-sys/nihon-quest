@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nihon-Quest: Black Market</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Permanent+Marker&family=Inter:wght@900&display=swap" rel="stylesheet">
+    <style>
+        :root { --p5-red: #d31212; --p5-black: #000000; --p5-white: #ffffff; --p5-gold: #ffd700; --p5-neon-purple: #b026ff; }
+        body { background-color: var(--p5-black); color: var(--p5-white); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        
+        /* Tema Black Market: Gelap Pekat & Ungu Neon */
+        .persona-bg { background: linear-gradient(135deg, #05000a 0%, #150020 100%); background-attachment: fixed; }
+        .bg-lines { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(45deg, #000, #000 10px, #0a0011 10px, #0a0011 20px); z-index: -1; opacity: 0.9; }
+        
+        .pixel-font { font-family: 'Press Start 2P', cursive; }
+        .marker-font { font-family: 'Permanent Marker', cursive; }
+        .persona-border { border: 4px solid var(--p5-neon-purple); transform: skew(-2deg); box-shadow: 8px 8px 0px rgba(176, 38, 255, 0.5); }
+        .btn-persona { background-color: var(--p5-white); color: var(--p5-black); font-weight: 900; transform: skew(-5deg); transition: all 0.2s ease; border-left: 10px solid var(--p5-neon-purple); border-bottom: 4px solid #555; }
+        .btn-persona:hover { background-color: var(--p5-neon-purple); color: var(--p5-white); transform: skew(-5deg) scale(1.05); padding-left: 1.5rem; border-color: #6a0d99; box-shadow: 0 0 15px var(--p5-neon-purple); }
+        .gold-box { background-color: var(--p5-black); border: 2px solid var(--p5-gold); transform: skew(-10deg); box-shadow: 4px 4px 0px var(--p5-gold); }
+        .inventory-box { border: 2px dashed var(--p5-neon-purple); background: rgba(0,0,0,0.8); }
+
+        .bar-container { background: #333; height: 12px; transform: skew(-10deg); border: 2px solid white; position: relative; }
+        .hp-fill { width: 100%; height: 100%; background: var(--p5-neon-purple); box-shadow: 0 0 10px var(--p5-neon-purple); transition: width 0.3s; }
+
+        .npc-float { animation: float 3s infinite alternate ease-in-out; }
+        @keyframes float { 0% { transform: translateY(0); } 100% { transform: translateY(-5px); } }
+        
+        .neon-flicker { animation: flicker 1.5s infinite alternate; }
+        @keyframes flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } 52% { opacity: 0.2; } 54% { opacity: 0.8; } }
+
+        /* EFEK VISUAL ITEM OP */
+        .flash-heal { animation: flashPurple 0.6s ease-out; }
+        @keyframes flashPurple { 0% { box-shadow: inset 0 0 150px 80px rgba(176, 38, 255, 0.8); } 100% { box-shadow: inset 0 0 0 0 rgba(176, 38, 255, 0); } }
+        
+        .flash-red { animation: flashBlood 0.8s ease-out; }
+        @keyframes flashBlood { 0% { box-shadow: inset 0 0 200px 100px rgba(211, 18, 18, 0.9); } 100% { box-shadow: inset 0 0 0 0 rgba(211, 18, 18, 0); } }
+        
+        .shake { animation: shake 0.4s; }
+        @keyframes shake { 0% { transform: translate(2px, 2px) rotate(0deg); } 20% { transform: translate(-4px, 0px) rotate(2deg); } 40% { transform: translate(4px, 3px) rotate(-2deg); } 100% { transform: translate(2px, -2px) rotate(0deg); } }
+    </style>
+</head>
+<body class="persona-bg p-6 md:p-12">
+
+    <div class="bg-lines"></div>
+
+    <header class="max-w-5xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-start md:items-center bg-black p-4 text-white transform -rotate-1 shadow-[10px_10px_0px_#b026ff] border-2 border-[#b026ff]">
+        <div class="flex flex-col ml-2">
+            <span class="pixel-font text-[8px] text-[#b026ff] mb-1">FINAL REST AREA</span>
+            <h1 class="marker-font text-2xl md:text-3xl uppercase tracking-tighter">THE BLACK MARKET</h1>
+        </div>
+        
+        <div class="flex flex-wrap gap-4 items-end mt-4 md:mt-0">
+            <div class="w-24 md:w-32">
+                <p class="pixel-font text-[10px] mb-1 text-gray-300">HP <span id="hp-text-header" class="text-[8px] text-gray-500"></span></p>
+                <div class="bar-container"><div id="player-hp" class="hp-fill"></div></div>
+            </div>
+            <div class="gold-box px-4 py-2 text-white text-right w-24">
+                <p class="pixel-font text-[8px] text-yellow-400 mb-1">GOLD</p>
+                <p id="gold-display" class="marker-font text-xl text-yellow-400">0</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+        
+        <div class="flex flex-col items-center justify-center space-y-4">
+            <div class="relative mt-8 flex flex-col items-center">
+                <div class="neon-flicker w-56 h-56 bg-purple-900 rounded-full absolute top-10 -z-10 mix-blend-screen blur-3xl"></div>
+                
+                <img src="blackmarket.webp" alt="Black Market Dealer" class="npc-float w-56 h-56 object-contain drop-shadow-[0_0_25px_rgba(176,38,255,0.7)] z-10">
+                
+                <div class="bg-black text-white marker-font px-4 py-1 rotate-3 border-2 border-[#b026ff] mt-2 w-64 text-center shadow-[4px_4px_0px_#b026ff] z-20">
+                    SHADOW DEALER
+                </div>
+            </div>
+            
+            <div class="w-full persona-border bg-black p-6 relative mt-4">
+                <div class="absolute -top-4 left-4 bg-[#b026ff] text-white px-3 py-1 marker-font text-lg skew-x-[-10deg]">DEALER LOG</div>
+                <p id="dialog-main" class="text-lg font-black mt-2 leading-relaxed text-purple-200">「フフフ... 死に急ぐか。ならば、いい物を売ってやろう。」</p>
+                <p id="dialog-romaji" class="text-gray-400 italic text-sm mt-1">(Fufufu... shini isogu ka. Naraba, ii mono o utte yarou. - Hahaha... Terburu-buru mati? Kalau begitu, akan kujual barang bagus untukmu.)</p>
+            </div>
+
+            <div class="inventory-box w-full p-4 transform -rotate-1 mt-4">
+                <h3 class="pixel-font text-[10px] mb-2 text-[#b026ff]">EQUIPPED ITEMS</h3>
+                <div id="inventory-list" class="flex gap-3 flex-wrap">
+                    <p class="text-gray-600 italic text-sm">Tas masih kosong...</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="action-menu" class="grid grid-cols-1 gap-4">
+            </div>
+    </main>
+
+    <script>
+        const bgm = new Audio('bgm.mp3');
+        bgm.loop = true; 
+        function handleBGM() {
+            if (localStorage.getItem('playMusic') === 'true') {
+                let savedTime = parseFloat(localStorage.getItem('musicTime')) || 0;
+                bgm.currentTime = savedTime;
+                bgm.play().catch(() => {});
+                setInterval(() => { if (!bgm.paused) localStorage.setItem('musicTime', bgm.currentTime); }, 1000);
+            }
+        }
+        window.addEventListener('load', handleBGM);
+        window.addEventListener('click', () => { if (bgm.paused && localStorage.getItem('playMusic') === 'true') bgm.play(); }, { once: true });
+
+        // --- SISTEM LOAD DATA ---
+        let playerGold = parseInt(localStorage.getItem('playerGold')) || 0;
+        let inventory = [];
+        try {
+            let savedInv = localStorage.getItem('inventory');
+            if (savedInv) inventory = JSON.parse(savedInv);
+        } catch(e) { console.log("Inventory aman."); }
+
+        let maxPlayerHp = parseInt(localStorage.getItem('maxPlayerHp')) || 100;
+        let savedHp = parseInt(localStorage.getItem('playerHp'));
+        let playerHp = !isNaN(savedHp) ? savedHp : maxPlayerHp;
+
+        // Auto-fix if Limit Break Ryuu no Chi is already active
+        if (inventory.includes("竜の血 (Ryuu no Chi)")) {
+            maxPlayerHp = 250;
+        } else if (inventory.includes("Omamori")) {
+            maxPlayerHp = 150;
+        }
+
+        document.getElementById('gold-display').innerText = playerGold;
+        updateHpUI();
+        updateInventoryUI();
+
+        function updateHpUI() {
+            document.getElementById('player-hp').style.width = (playerHp / maxPlayerHp * 100) + '%';
+            document.getElementById('hp-text-header').innerText = `(${playerHp}/${maxPlayerHp})`;
+        }
+
+        function updateInventoryUI() {
+            const invList = document.getElementById('inventory-list');
+            if (inventory.length > 0) {
+                invList.innerHTML = ''; 
+                inventory.forEach(item => {
+                    let badgeColor = item.includes("妖刀") ? "bg-red-600 text-white" : item.includes("竜の血") ? "bg-purple-600 text-white" : "bg-white text-black";
+                    invList.innerHTML += `<div class="${badgeColor} font-bold px-3 py-1 text-xs md:text-sm transform skew-x-6 border border-black shadow-[2px_2px_0px_#b026ff]">★ ${item}</div>`;
+                });
+            }
+        }
+
+        function renderMainMenu() {
+            const menu = document.getElementById('action-menu');
+            menu.innerHTML = `
+                <div class="bg-[#b026ff] p-2 transform -skew-x-12 inline-block mb-2 shadow-[4px_4px_0px_#ffffff]">
+                    <p class="marker-font text-2xl px-2 text-white">THE ILLEGAL GOODS</p>
+                </div>
+                
+                <button onclick="openBuyMenu()" class="btn-persona p-5 group text-left flex flex-col">
+                    <span class="pixel-font text-sm">01. かう (Kau)</span>
+                    <span class="font-bold text-gray-500 group-hover:text-black mt-1">- Beli Barang Terlarang</span>
+                </button>
+                
+                <button onclick="npcTalk()" class="btn-persona p-5 group text-left flex flex-col mt-2">
+                    <span class="pixel-font text-sm">02. はなす (Hanasu)</span>
+                    <span class="font-bold text-gray-500 group-hover:text-black mt-1">- Tanya tentang Bos Terakhir</span>
+                </button>
+
+                <button onclick="leaveBlackMarket()" class="btn-persona p-5 group text-left flex flex-col hover:bg-black border-red-600 mt-4">
+                    <span class="pixel-font text-sm text-red-600">03. まおうのしろ (Maou no Shiro)</span>
+                    <span class="font-bold text-gray-500 group-hover:text-red-500 mt-1">- Menuju Singgasana Raja Iblis!</span>
+                </button>
+            `;
+        }
+        
+        renderMainMenu();
+
+        function npcTalk() {
+            const dialogMain = document.getElementById('dialog-main');
+            const dialogRomaji = document.getElementById('dialog-romaji');
+            dialogMain.innerHTML = "「あの扉の先は地獄だ。命が惜しければ、全財産をここで使え。」";
+            dialogRomaji.innerHTML = "(Ano tobira no saki wa jigoku da. Inochi ga oshikereba, zenzaisan o koko de tsukae. - Di balik pintu itu adalah neraka. Jika sayang nyawa, habiskan hartamu di sini.)";
+        }
+
+        function openBuyMenu() {
+            const menu = document.getElementById('action-menu');
+            menu.innerHTML = `
+                <div class="bg-red-800 p-2 transform -skew-x-12 inline-block shadow-[4px_4px_0px_#ffffff]">
+                    <p class="marker-font text-xl px-2 text-white">BLACK MARKET MENU</p>
+                </div>
+                
+                <button onclick="buyItem('shizuku')" class="btn-persona p-4 text-left border-gray-400 group">
+                    <span class="font-bold text-lg text-blue-800 group-hover:text-blue-200">A. 神の雫 (Kami no Shizuku) - <span class="text-yellow-600">500 G</span></span>
+                    <span class="block text-xs text-gray-400 mt-1">Tetesan Dewa / [FULL HEAL] HP Penuh</span>
+                </button>
+                
+                <button onclick="buyItem('ryuu')" class="btn-persona p-4 text-left border-gray-400 group">
+                    <span class="font-bold text-lg text-purple-800 group-hover:text-purple-200">B. 竜の血 (Ryuu no Chi) - <span class="text-yellow-600">1000 G</span></span>
+                    <span class="block text-xs text-gray-400 mt-1">Darah Naga / [LIMIT BREAK] Max HP jadi 250</span>
+                </button>
+
+                <button onclick="buyItem('muramasa')" class="btn-persona p-4 text-left border-gray-400 group">
+                    <span class="font-bold text-lg text-red-800 group-hover:text-red-200">C. 妖刀村正 (Youtou Muramasa) - <span class="text-yellow-600">1500 G</span></span>
+                    <span class="block text-xs text-gray-400 mt-1">Pedang Kutukan / [ULTIMATE DAMAGE] Untuk Final Boss</span>
+                </button>
+
+                <button onclick="renderMainMenu()" class="mt-4 text-gray-400 underline font-bold hover:text-white text-right">BACK</button>
+            `;
+        }
+
+        function buyItem(itemType) {
+            const dialogMain = document.getElementById('dialog-main');
+            const dialogRomaji = document.getElementById('dialog-romaji');
+            
+            document.body.classList.remove('shake', 'flash-heal', 'flash-red');
+            void document.body.offsetWidth;
+
+            if (itemType === 'shizuku') {
+                if (playerGold >= 500) {
+                    if (playerHp >= maxPlayerHp) {
+                        dialogMain.innerHTML = "「傷一つないくせに、何を欲しがる？」";
+                        dialogRomaji.innerHTML = "(Kizu hitotsu nai kuse ni... - Kau tidak terluka, untuk apa ini?)";
+                        return;
+                    }
+                    playerGold -= 500;
+                    playerHp = maxPlayerHp; // FULL HEAL
+                    
+                    document.body.classList.add('flash-heal');
+                    dialogMain.innerHTML = "「神の雫を飲んだ...！」<br><span class='text-blue-400 font-black text-2xl tracking-widest'>[ FULL HEAL RECOVERED! ]</span>";
+                    dialogRomaji.innerHTML = "(Kami no shizuku o nonda...! - Kau meminum tetesan dewa!)";
+                } else {
+                    noMoneyDialog(); return;
+                }
+            } 
+            else if (itemType === 'ryuu') {
+                if (inventory.includes("竜の血 (Ryuu no Chi)") || maxPlayerHp >= 250) {
+                    dialogMain.innerHTML = "「お前の体はもう限界だ。これ以上は死ぬぞ。」";
+                    dialogRomaji.innerHTML = "(Omae no karada wa mou genkai da. - Tubuhmu sudah di batasnya. Lebih dari ini kau akan mati.)";
+                    return;
+                }
+                if (playerGold >= 1000) {
+                    playerGold -= 1000;
+                    maxPlayerHp = 250; // LIMIT BREAK
+                    playerHp = maxPlayerHp; // Full Heal sekalian
+                    
+                    inventory = inventory.filter(item => item !== "Omamori"); // Buang jimat lemah
+                    inventory.push("竜の血 (Ryuu no Chi)");
+                    
+                    document.body.classList.add('shake', 'flash-heal');
+                    dialogMain.innerHTML = "「竜の血が体を巡る...！」<br><span class='text-purple-400 font-black text-2xl tracking-widest'>[ LIMIT BREAK! MAX HP 250 ]</span>";
+                    dialogRomaji.innerHTML = "(Ryuu no chi ga karada o meguru...! - Darah naga mengalir di tubuhmu!)";
+                } else {
+                    noMoneyDialog(); return;
+                }
+            }
+            else if (itemType === 'muramasa') {
+                if (inventory.includes("妖刀村正 (Youtou Muramasa)")) {
+                    dialogMain.innerHTML = "「その呪われた刀は一本で十分だろう...」";
+                    dialogRomaji.innerHTML = "(Sono norowareta katana wa ippon de juubun darou... - Satu pedang kutukan saja sudah cukup bagimu...)";
+                    return;
+                }
+                if (playerGold >= 1500) {
+                    playerGold -= 1500;
+                    
+                    inventory = inventory.filter(item => item !== "Katana"); // Ganti pedang lama
+                    inventory.push("妖刀村正 (Youtou Muramasa)");
+                    
+                    document.body.classList.add('shake', 'flash-red');
+                    dialogMain.innerHTML = "「呪いの刀、村正を手に入れた...！」<br><span class='text-red-600 font-black text-2xl tracking-widest'>[ ULTIMATE WEAPON OBTAINED! ]</span>";
+                    dialogRomaji.innerHTML = "(Noroi no katana, Muramasa o te ni ireta...! - Kau mendapatkan pedang kutukan Muramasa!)";
+                } else {
+                    noMoneyDialog(); return;
+                }
+            }
+
+            // Simpan ke brankas
+            localStorage.setItem('playerGold', playerGold);
+            localStorage.setItem('playerHp', playerHp);
+            localStorage.setItem('maxPlayerHp', maxPlayerHp);
+            localStorage.setItem('inventory', JSON.stringify(inventory));
+            
+            document.getElementById('gold-display').innerText = playerGold;
+            updateHpUI();
+            updateInventoryUI();
+        }
+
+        function noMoneyDialog() {
+            const dialogMain = document.getElementById('dialog-main');
+            const dialogRomaji = document.getElementById('dialog-romaji');
+            dialogMain.innerHTML = "「金が足りないな。命が惜しくないのか？」";
+            dialogRomaji.innerHTML = "(Kane ga tarinai na... - Uangmu tidak cukup. Apa kau tak sayang nyawa?)";
+        }
+
+        function leaveBlackMarket() {
+            const dialogMain = document.getElementById('dialog-main');
+            const dialogRomaji = document.getElementById('dialog-romaji'); 
+            
+            dialogMain.innerHTML = "<span class='text-red-500'>「せいぜい足掻くことだな...！」</span>";
+            dialogRomaji.innerHTML = "(Seizei agaku koto da na...! - Berjuanglah sekeras mungkin...!)"; 
+            
+            const menu = document.getElementById('action-menu');
+            menu.innerHTML = `
+                <div class="bg-black border-4 border-red-600 p-8 text-center transform skew-x-[-2deg] shadow-[8px_8px_0px_#d31212] mt-4">
+                    <h1 class="marker-font text-3xl mb-4 text-white glitch-text">THE FINAL BATTLE AWAITS</h1>
+                    <p class="pixel-font text-xs mb-8 text-gray-400 leading-relaxed">Semua persiapan telah selesai. Waktunya menghadapi takdir.</p>
+                    <a href="quest10.html" class="inline-block bg-white text-black px-8 py-4 border-2 border-black hover:bg-red-600 hover:text-white transition-colors marker-font text-2xl transform skew-x-[-10deg]">
+                        ENTER DEMON KING'S THRONE ▶
+                    </a>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

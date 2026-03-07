@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nihon-Quest: Ninja Bridge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Permanent+Marker&family=Inter:wght@900&display=swap" rel="stylesheet">
+    <style>
+        :root { --p5-red: #d31212; --p5-black: #000000; --p5-white: #ffffff; --p5-gold: #ffd700; --p5-purple: #8e44ad; }
+        body { background-color: var(--p5-black); color: var(--p5-white); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        
+        /* Tema Malam/Ninja */
+        .persona-bg { background: linear-gradient(135deg, #0a0015 0%, #150025 100%); background-attachment: fixed; }
+        .bg-lines { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(45deg, #000, #000 10px, #050010 10px, #050010 20px); z-index: -1; opacity: 0.9; }
+        
+        .pixel-font { font-family: 'Press Start 2P', cursive; }
+        .marker-font { font-family: 'Permanent Marker', cursive; }
+        .persona-border { border: 4px solid var(--p5-white); transform: skew(-2deg); box-shadow: 8px 8px 0px var(--p5-purple); }
+        .btn-persona { background-color: var(--p5-white); color: var(--p5-black); font-weight: 900; transform: skew(-5deg); transition: all 0.2s ease; border-left: 10px solid var(--p5-purple); border-bottom: 4px solid #999; }
+        .btn-persona:hover { background-color: var(--p5-purple); color: var(--p5-white); transform: skew(-5deg) scale(1.05); padding-left: 1.5rem; border-color: #5b2c6f; }
+        .gold-box { background-color: var(--p5-black); border: 2px solid var(--p5-gold); transform: skew(-10deg); box-shadow: 4px 4px 0px var(--p5-gold); }
+
+        .bar-container { background: #333; height: 12px; transform: skew(-10deg); border: 2px solid white; position: relative; }
+        .hp-fill { width: 100%; height: 100%; background: var(--p5-red); box-shadow: 0 0 10px var(--p5-red); transition: width 0.3s; }
+
+        .ninja-hp-container { background: #333; height: 16px; border: 2px solid white; width: 100%; margin-top: 10px; transform: skew(-5deg); position: relative; }
+        .ninja-hp-fill { background: var(--p5-purple); width: 100%; height: 100%; transition: width 0.2s ease-out; box-shadow: 0 0 10px var(--p5-purple); }
+
+        /* Timer Bar */
+        .timer-container { display: none; background: #222; height: 20px; border: 3px solid white; width: 100%; transform: skew(-5deg); margin-bottom: 10px; }
+        .timer-fill { background: #e74c3c; width: 100%; height: 100%; transition: width 1s linear; box-shadow: 0 0 15px #e74c3c; }
+
+        .ninja-dash { animation: dash 2s infinite ease-in-out; }
+        @keyframes dash { 0% { transform: translateX(-15px); opacity: 0.8; } 50% { transform: translateX(15px); opacity: 1; } 100% { transform: translateX(-15px); opacity: 0.8; } }
+        
+        .shake { animation: shake 0.3s; }
+        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 40% { transform: translate(3px, 2px) rotate(-1deg); } 100% { transform: translate(1px, -1px) rotate(0deg); } }
+
+        /* ANIMASI TRANSISI STAGE 4 */
+        #stage-transition {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: var(--p5-black); z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            animation: fadeOutStage 1s ease-in-out 2.5s forwards; pointer-events: none;
+        }
+        @keyframes fadeOutStage { 0% { opacity: 1; visibility: visible; } 100% { opacity: 0; visibility: hidden; } }
+        .glitch-text { text-shadow: 3px 0 var(--p5-purple), -3px 0 var(--p5-red); animation: glitch 0.3s infinite; }
+        @keyframes glitch { 0% { transform: translate(0) } 20% { transform: translate(-2px, 2px) } 40% { transform: translate(-2px, -2px) } 60% { transform: translate(2px, 2px) } 80% { transform: translate(2px, -2px) } 100% { transform: translate(0) } }
+    </style>
+</head>
+<body class="persona-bg p-6 md:p-12">
+    <div id="stage-transition">
+        <h1 class="marker-font text-6xl md:text-8xl text-white mb-4 glitch-text transform -skew-x-12">STAGE 4</h1>
+        <h2 class="pixel-font text-sm md:text-lg text-purple-500 tracking-widest border-y-2 border-purple-500 py-2">THE ADVANCED TRIALS</h2>
+    </div>
+
+    <div class="bg-lines"></div>
+
+    <header class="max-w-5xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-4 text-black transform -rotate-1 shadow-[10px_10px_0px_#8e44ad]">
+        <div class="flex flex-col ml-2">
+            <span class="pixel-font text-[8px] text-purple-600 mb-1">STAGE 4 | QUEST 6</span>
+            <h1 class="marker-font text-2xl md:text-3xl uppercase tracking-tighter">NINJA BRIDGE</h1>
+        </div>
+        
+        <div class="flex flex-wrap gap-4 items-end mt-4 md:mt-0">
+            <div class="w-24 md:w-32">
+                <p class="pixel-font text-[10px] mb-1">HP <span id="hp-text-header" class="text-[8px] text-gray-400"></span></p>
+                <div class="bar-container"><div id="player-hp" class="hp-fill"></div></div>
+            </div>
+            <div class="gold-box px-4 py-2 text-white text-right w-24">
+                <p class="pixel-font text-[8px] text-yellow-400 mb-1">GOLD</p>
+                <p id="gold-display" class="marker-font text-xl text-yellow-400">0</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+        
+        <div class="flex flex-col items-center justify-center space-y-4">
+            <div class="ninja-dash relative mt-8 flex flex-col items-center">
+                <div class="w-40 h-40 bg-purple-900 rounded-full absolute top-0 -z-10 mix-blend-multiply blur-xl"></div>
+                
+                <img src="ninja.webp" alt="Shadow Ninja" class="w-48 h-48 object-contain drop-shadow-[0_0_20px_rgba(142,68,173,0.8)] z-10">
+                
+                <div class="bg-black text-white marker-font px-4 py-1 rotate-3 border-2 border-[#8e44ad] mt-2 w-64 text-center shadow-[4px_4px_0px_#8e44ad] z-20">
+                    SHADOW NINJA LV. 45
+                    <div class="ninja-hp-container">
+                        <div id="ninja-hp-bar" class="ninja-hp-fill"></div>
+                        <p id="ninja-hp-text" class="absolute inset-0 text-[10px] pixel-font text-white leading-[12px] drop-shadow-md z-10">120/120</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="w-full persona-border bg-black p-6 relative mt-4">
+                <div class="absolute -top-4 left-4 bg-[#8e44ad] text-white px-3 py-1 marker-font text-lg skew-x-[-10deg]">BATTLE LOG</div>
+                <p id="dialog-main" class="text-lg font-black mt-2 leading-relaxed text-purple-200">「影の忍者が素早く動いている！」</p>
+                <p id="dialog-romaji" class="text-gray-400 italic text-sm mt-1">(Kage no ninja ga subayaku ugoite iru! - Ninja bayangan bergerak sangat cepat!)</p>
+            </div>
+        </div>
+
+        <div id="action-menu" class="grid grid-cols-1 gap-4">
+            </div>
+    </main>
+
+    <script>
+        // --- SISTEM BGM ---
+        const bgm = new Audio('bgm.mp3');
+        bgm.loop = true; 
+        function handleBGM() {
+            if (localStorage.getItem('playMusic') === 'true') {
+                let savedTime = parseFloat(localStorage.getItem('musicTime')) || 0;
+                bgm.currentTime = savedTime;
+                bgm.play().catch(() => {});
+                setInterval(() => { if (!bgm.paused) localStorage.setItem('musicTime', bgm.currentTime); }, 1000);
+            }
+        }
+        window.addEventListener('load', handleBGM);
+        window.addEventListener('click', () => { if (bgm.paused && localStorage.getItem('playMusic') === 'true') bgm.play(); }, { once: true });
+
+        // --- LOAD DATA (PERSISTEN) ---
+        let playerName = localStorage.getItem('playerName') || 'HERO';
+        let playerGold = parseInt(localStorage.getItem('playerGold')) || 0;
+        let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
+        
+        let maxPlayerHp = parseInt(localStorage.getItem('maxPlayerHp')) || 100;
+        let savedHp = parseInt(localStorage.getItem('playerHp'));
+        let playerHp = !isNaN(savedHp) ? savedHp : maxPlayerHp;
+
+        let ninjaHp = 120;
+        const maxNinjaHp = 120;
+        let isGameOver = false;
+
+        // --- SISTEM TIMER ---
+        let timerInterval;
+        let timeLeft = 5; // 5 Detik
+
+        document.getElementById('gold-display').innerText = playerGold;
+        updateHpUI();
+
+        function updateHpUI() {
+            document.getElementById('player-hp').style.width = (playerHp / maxPlayerHp * 100) + '%';
+            document.getElementById('hp-text-header').innerText = `(${playerHp}/${maxPlayerHp})`;
+        }
+
+        // --- DATA KUIS CEPAT ---
+        const speedQuizzes = [
+            { question: "Bahasa Jepangnya 'Cepat'?", a: "早い (Hayai)", b: "遅い (Osoi)", c: "重い (Omoi)", correct: 'a' },
+            { question: "Arti kata '急ぐ' (Isogu)?", a: "Bersembunyi", b: "Bergegas", c: "Menyerang", correct: 'b' },
+            { question: "Bahasa Jepangnya 'Bahaya'?", a: "怖い (Kowai)", b: "暗い (Kurai)", c: "危ない (Abunai)", correct: 'c' },
+            { question: "Arti kata '暗い' (Kurai)?", a: "Gelap", b: "Sakit", c: "Mati", correct: 'a' }
+        ];
+        let currentQuiz = null;
+
+        function renderMainMenu() {
+            const menu = document.getElementById('action-menu');
+            menu.innerHTML = `
+                <div class="bg-purple-600 p-2 transform -skew-x-12 inline-block mb-2 shadow-[4px_4px_0px_#ffffff]">
+                    <p class="marker-font text-2xl px-2 text-white">FAST REACTION!</p>
+                </div>
+                
+                <button onclick="startSpeedQuiz()" class="btn-persona p-5 group text-left flex flex-col">
+                    <span class="pixel-font text-sm">01. たたかう (Tatakau)</span>
+                    <span class="font-bold text-gray-500 group-hover:text-black mt-1">- Serang Cepat! (5 Detik)</span>
+                </button>
+
+                <button onclick="battleAction('run')" class="btn-persona p-5 group text-left flex flex-col hover:bg-black border-purple-600 mt-4">
+                    <span class="pixel-font text-sm text-purple-600">02. にげる (Nigeru)</span>
+                    <span class="font-bold text-gray-500 group-hover:text-purple-400 mt-1">- Kabur dari pertarungan</span>
+                </button>
+            `;
+        }
+        
+        renderMainMenu();
+
+        function battleAction(action) {
+            if(isGameOver) return; 
+            if (action === 'run') {
+                triggerGameOver("Kamu mencoba kabur, tapi shuriken ninja lebih cepat...");
+            }
+        }
+
+        function startSpeedQuiz() {
+            currentQuiz = speedQuizzes[Math.floor(Math.random() * speedQuizzes.length)];
+            
+            const menu = document.getElementById('action-menu');
+            menu.innerHTML = `
+                <div id="timer-container" class="timer-container">
+                    <div id="timer-bar" class="timer-fill"></div>
+                </div>
+
+                <div class="bg-black border-2 border-[#8e44ad] p-4 mb-2 transform skew-x-[-2deg]">
+                    <p class="font-bold text-white text-xl">${currentQuiz.question}</p>
+                </div>
+
+                <button onclick="checkAnswer('a')" class="btn-persona p-4 text-left border-gray-400"><span class="font-bold text-lg">A. ${currentQuiz.a}</span></button>
+                <button onclick="checkAnswer('b')" class="btn-persona p-4 text-left border-gray-400"><span class="font-bold text-lg">B. ${currentQuiz.b}</span></button>
+                <button onclick="checkAnswer('c')" class="btn-persona p-4 text-left border-gray-400"><span class="font-bold text-lg">C. ${currentQuiz.c}</span></button>
+            `;
+
+            // Mulai Timer!
+            document.getElementById('timer-container').style.display = 'block';
+            timeLeft = 5;
+            document.getElementById('timer-bar').style.width = '100%';
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer-bar').style.width = (timeLeft / 5 * 100) + '%';
+                
+                if(timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timeOutFail(); // Panggil fungsi gagal kalau telat
+                }
+            }, 1000);
+        }
+
+        function timeOutFail() {
+            document.body.classList.remove('shake');
+            void document.body.offsetWidth;
+            document.body.classList.add('shake');
+
+            let takenDamage = 35; // Damage ninja lumayan sakit
+            playerHp -= takenDamage;
+            if(playerHp < 0) playerHp = 0;
+            
+            updateHpUI();
+            
+            const dialogMain = document.getElementById('dialog-main');
+            const dialogRomaji = document.getElementById('dialog-romaji');
+            
+            dialogMain.innerHTML = `「遅い！背後を取られた！」<br><span class='text-red-500'>忍者の手裏剣！${takenDamage} ダメージ！</span>`;
+            dialogRomaji.innerHTML = "(Osoi! Haigo o torareta! - Terlalu lambat! Punggungmu diserang!)";
+
+            if(playerHp <= 0) {
+                setTimeout(() => triggerGameOver("Kamu kalah cepat dari bayangan..."), 800);
+            } else {
+                renderMainMenu();
+            }
+        }
+
+        function checkAnswer(selectedOption) {
+            clearInterval(timerInterval); // Matikan timer biar aman
+            
+            const dialogMain = document.getElementById('dialog-main');
+            const dialogRomaji = document.getElementById('dialog-romaji');
+            
+            document.body.classList.remove('shake');
+            void document.body.offsetWidth;
+            document.body.classList.add('shake');
+
+            if (selectedOption === currentQuiz.correct) {
+                // JAWABAN BENAR & CEPAT
+                let damage = inventory.includes("Katana") ? 60 : 35; 
+                ninjaHp -= damage;
+                if(ninjaHp < 0) ninjaHp = 0;
+
+                document.getElementById('ninja-hp-bar').style.width = (ninjaHp / maxNinjaHp * 100) + '%';
+                document.getElementById('ninja-hp-text').innerText = ninjaHp + '/' + maxNinjaHp;
+
+                dialogMain.innerHTML = `「見切った！鋭い反撃！」<br><span class='text-[#8e44ad]'>${damage} ダメージ！</span>`;
+                dialogRomaji.innerHTML = "(Mikitta! Surudoi hangeki! - Terbaca! Serangan balik tajam!)";
+
+                if(ninjaHp === 0) {
+                    setTimeout(triggerWin, 800); 
+                } else {
+                    renderMainMenu();
+                }
+            } else {
+                // JAWABAN SALAH (Walaupun cepat)
+                let takenDamage = 35; 
+                playerHp -= takenDamage;
+                if(playerHp < 0) playerHp = 0;
+                
+                updateHpUI();
+                
+                dialogMain.innerHTML = `「間違い！隙だらけだ！」<br><span class='text-red-500'>忍者のカウンター！${takenDamage} ダメージ！</span>`;
+                dialogRomaji.innerHTML = "(Machigai! Suki darake da! - Salah! Pertahananmu terbuka!)";
+
+                if(playerHp <= 0) {
+                    setTimeout(() => triggerGameOver("Kamu terbunuh oleh kecepatan Ninja..."), 800);
+                } else {
+                    renderMainMenu();
+                }
+            }
+        }
+
+        function triggerGameOver(customMessage) {
+            isGameOver = true;
+            document.getElementById('player-hp').style.width = '0%';
+            const dialogMain = document.getElementById('dialog-main');
+            
+            dialogMain.innerHTML = "<span class='text-red-600'>「目の前が真っ暗になった...」</span>";
+            
+            const menu = document.getElementById('action-menu');
+            menu.innerHTML = `
+                <div class="bg-black border-4 border-red-600 p-8 text-center transform skew-x-[-2deg] shadow-[8px_8px_0px_#d31212] mt-4">
+                    <h1 class="marker-font text-5xl md:text-7xl mb-4 text-red-600 glitch-text">GAME OVER</h1>
+                    <p class="pixel-font text-xs mb-8 text-gray-400 leading-relaxed">${customMessage}</p>
+                    <a href="index.html" class="inline-block bg-white text-black px-8 py-4 border-2 border-black hover:bg-red-600 hover:text-white transition-colors marker-font text-2xl transform skew-x-[-10deg]">
+                        TRY AGAIN
+                    </a>
+                </div>
+            `;
+        }
+
+        function triggerWin() {
+            isGameOver = true;
+            
+            playerGold += 300; 
+            localStorage.setItem('playerGold', playerGold);
+            localStorage.setItem('playerHp', playerHp); // SIMPAN HP!
+            document.getElementById('gold-display').innerText = playerGold;
+
+            const menu = document.getElementById('action-menu');
+            menu.innerHTML = `
+                <div class="bg-white border-4 border-black p-8 text-center transform skew-x-[2deg] shadow-[8px_8px_0px_#8e44ad] mt-4">
+                    <h1 class="marker-font text-4xl md:text-5xl mb-4 text-black">NINJA DEFEATED!</h1>
+                    <p class="pixel-font text-[10px] mb-2 text-gray-600">REWARDS:</p>
+                    <p class="marker-font text-yellow-500 text-3xl">+ 300 GOLD</p>
+                    
+                    <a href="quest7.html" class="inline-block mt-8 bg-black text-white px-8 py-4 border-2 border-white hover:bg-[#8e44ad] transition-colors marker-font text-xl transform skew-x-[-10deg]">
+                        NEXT: SAMURAI DOJO ▶
+                    </a>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

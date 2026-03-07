@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nihon-Quest: Classified Record</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Permanent+Marker&family=Inter:wght@400;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --p5-red: #d31212; --p5-black: #000000; --p5-white: #ffffff; --p5-gray: #e5e5e5; }
+        
+        /* Tema Phantom / Dokumen Rahasia */
+        body { 
+            background-color: var(--p5-black);
+            color: var(--p5-white); 
+            font-family: 'Inter', sans-serif; 
+            overflow-x: hidden; 
+            min-height: 100vh;
+        }
+        
+        .bg-lines { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(45deg, #000, #000 10px, #0a0a0a 10px, #0a0a0a 20px); z-index: -1; }
+        
+        .pixel-font { font-family: 'Press Start 2P', cursive; }
+        .marker-font { font-family: 'Permanent Marker', cursive; }
+        
+        /* Glitch Teks Keras */
+        .glitch-text { text-shadow: 4px 0 var(--p5-red), -4px 0 var(--p5-white); animation: glitch 0.2s infinite; }
+        @keyframes glitch { 0% { transform: translate(0) } 20% { transform: translate(-2px, 2px) } 40% { transform: translate(-2px, -2px) } 60% { transform: translate(2px, 2px) } 80% { transform: translate(2px, -2px) } 100% { transform: translate(0) } }
+
+        /* KOTAK DOSSIER (Putih Kertas, Border Hitam, Shadow Merah) */
+        .dossier-box { 
+            background-color: var(--p5-white); 
+            color: var(--p5-black); 
+            border: 6px solid var(--p5-black); 
+            transform: skew(-3deg) rotate(-1deg); 
+            box-shadow: 12px 12px 0px var(--p5-red); 
+            opacity: 0; 
+            animation: slideInStamp 0.5s ease-out 1.5s forwards; 
+            position: relative;
+        }
+        
+        /* Stempel Cleared */
+        .stamp-cleared {
+            position: absolute; top: -20px; right: -20px;
+            color: var(--p5-red); border: 6px solid var(--p5-red);
+            padding: 5px 15px; font-size: 2rem; transform: rotate(15deg);
+            opacity: 0.9; box-shadow: 0 0 10px rgba(211,18,18,0.5);
+            z-index: 20;
+        }
+
+        /* Filter Monochrome untuk Gambar Sunrise */
+        .phantom-filter { filter: grayscale(100%) contrast(150%); border: 4px solid var(--p5-black); }
+
+        /* Animasi Kemunculan */
+        .fade-in { opacity: 0; animation: fadeIn 0.8s ease-in forwards; }
+        .delay-1 { animation-delay: 1s; }
+        .delay-3 { animation-delay: 3s; }
+        @keyframes fadeIn { 0% { opacity: 0; transform: translateX(-20px); } 100% { opacity: 1; transform: translateX(0); } }
+        @keyframes slideInStamp { 0% { opacity: 0; transform: scale(1.2) skew(-3deg) rotate(-1deg); } 100% { opacity: 1; transform: scale(1) skew(-3deg) rotate(-1deg); } }
+
+        /* Teks Berjalan (Credits) */
+        .credits-mask { overflow: hidden; position: relative; height: 160px; mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent); opacity: 0; animation: fadeIn 1s ease-in 2.5s forwards; margin-top: 2rem; border-left: 4px solid var(--p5-red); padding-left: 1rem; transform: skew(-2deg); }
+        .credits-content { position: absolute; width: 100%; animation: scrollUp 12s linear infinite; top: 100%; text-align: left; }
+        @keyframes scrollUp { 0% { top: 100%; } 100% { top: -150%; } }
+
+        /* Tombol Hapus Data */
+        .btn-erase { background-color: var(--p5-black); color: var(--p5-white); border: 4px solid var(--p5-red); box-shadow: 6px 6px 0px var(--p5-red); transform: skew(-5deg); transition: 0.1s; opacity: 0; animation: fadeIn 0.5s ease-in 4s forwards; }
+        .btn-erase:hover { background-color: var(--p5-red); color: var(--p5-white); transform: skew(-5deg) translate(2px, 2px); box-shadow: 2px 2px 0px var(--p5-black); }
+    </style>
+</head>
+<body class="p-6 md:p-12 flex flex-col items-center justify-center relative">
+
+    <div class="bg-lines"></div>
+
+    <main class="max-w-4xl w-full flex flex-col items-center z-10">
+        
+        <div class="text-center mb-8 fade-in">
+            <h2 class="pixel-font text-[10px] text-red-600 tracking-widest mb-3 border-y-2 border-red-600 py-1 inline-block">OPERATION COMPLETED</h2>
+            <h1 class="marker-font text-5xl md:text-7xl text-white glitch-text transform -skew-x-12">MISSION CLEARED</h1>
+        </div>
+
+        <div class="fade-in delay-1 mb-6 w-full flex justify-center">
+            <div class="relative transform rotate-2 shadow-[8px_8px_0px_#d31212]">
+                <div class="absolute inset-0 bg-red-600 mix-blend-overlay opacity-30"></div>
+                <img src="sunrise.webp" alt="Mission Target" class="w-64 h-48 object-cover phantom-filter">
+                <div class="absolute bottom-2 right-2 bg-black text-white pixel-font text-[8px] px-2 py-1">TARGET: DEFEATED</div>
+            </div>
+        </div>
+
+        <div class="text-center px-4 md:px-12 mb-8 fade-in delay-1 w-full max-w-2xl bg-black border-l-4 border-red-600 p-4 transform skew-x-[-2deg]">
+            <p class="text-sm md:text-md font-bold leading-relaxed text-gray-300 font-mono">
+                > SUBJECT: DEMON KING<br>
+                > STATUS: ELIMINATED<br>
+                > Pengetahuan bahasa Jepang target terbukti fatal. Ancaman telah dinetralisir. Dunia kembali ke tangan umat manusia.
+            </p>
+        </div>
+
+        <div class="dossier-box w-full md:w-3/4 p-8 mb-4">
+            <div class="stamp-cleared marker-font">CLEARED</div>
+            <div class="absolute -top-5 left-4 bg-black text-white px-4 py-1 marker-font text-xl border-2 border-white transform skew-x-[-5deg]">CONFIDENTIAL DOSSIER</div>
+            
+            <div class="grid grid-cols-2 gap-y-6 gap-x-4 mt-6">
+                <div class="border-b-2 border-gray-300 pb-2">
+                    <p class="pixel-font text-[8px] text-gray-500 mb-1">AGENT CODENAME</p>
+                    <p id="stat-name" class="font-black text-3xl uppercase text-black marker-font">HERO</p>
+                </div>
+                <div class="text-right border-b-2 border-gray-300 pb-2">
+                    <p class="pixel-font text-[8px] text-gray-500 mb-1">FINAL CLASSIFICATION</p>
+                    <p id="stat-title" class="font-black text-xl md:text-2xl text-red-600">TRUE SAMURAI</p>
+                </div>
+                <div>
+                    <p class="pixel-font text-[8px] text-gray-500 mb-1">VITALS (REMAINING HP)</p>
+                    <p id="stat-hp" class="font-black text-2xl text-black font-mono">100 / 100</p>
+                </div>
+                <div class="text-right">
+                    <p class="pixel-font text-[8px] text-gray-500 mb-1">BOUNTY COLLECTED</p>
+                    <p id="stat-gold" class="font-black text-2xl text-black font-mono">0 G</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full md:w-2/3 credits-mask">
+            <div class="credits-content flex flex-col gap-6 font-mono">
+                <div>
+                    <p class="pixel-font text-[8px] text-red-500">> DIRECTOR_AND_STORY</p>
+                    <p class="font-black text-xl text-white mt-1 uppercase">Fabian Deco Afrizal</p>
+                    <p class="text-xs text-gray-500 mt-1">[THE PHANTOM STUDENT]</p>
+                </div>
+                <div>
+                    <p class="pixel-font text-[8px] text-red-500">> SYSTEM_AND_CODE</p>
+                    <p class="font-black text-lg text-white mt-1 uppercase">Gemini AI</p>
+                </div>
+                <div>
+                    <p class="pixel-font text-[8px] text-red-500">> FIELD_OPERATIVE</p>
+                    <p class="font-black text-xl text-white mt-1 uppercase bg-red-600 inline-block px-2">YOU (THE PLAYER)</p>
+                </div>
+                <div class="mt-4">
+                    <p class="pixel-font text-[10px] text-gray-400">END OF LOG.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-6 fade-in delay-3">
+            <p class="font-black text-xl text-white">「記録は消えても、記憶は残る。」</p>
+            <p class="text-xs text-gray-400 italic mt-2">(Kiroku wa kietemo, kioku wa nokoru - Meski catatan terhapus, ingatan akan tetap ada.)</p>
+        </div>
+
+        <button onclick="startNewJourney()" class="btn-erase px-12 py-5 group relative cursor-pointer mt-10 mb-8 flex flex-col items-center">
+            <span class="font-black text-xl md:text-2xl tracking-widest uppercase">Erase Record</span>
+            <span class="block pixel-font text-[8px] text-red-500 mt-2 group-hover:text-white transition-colors">(Format Data & Return to HQ)</span>
+        </button>
+
+    </main>
+
+    <script>
+        // --- LOAD DATA TERAKHIR ---
+        let playerName = localStorage.getItem('playerName') || 'AGENT';
+        let playerGold = localStorage.getItem('playerGold') || '0';
+        let playerHp = localStorage.getItem('playerHp') || '0';
+        let maxPlayerHp = localStorage.getItem('maxPlayerHp') || '100';
+        
+        let inventory = [];
+        try {
+            let savedInv = localStorage.getItem('inventory');
+            if (savedInv) inventory = JSON.parse(savedInv);
+        } catch(e) {}
+
+        // --- SISTEM GELAR (CLASSIFICATION) ---
+        let finalTitle = "WANDERING TRAVELER";
+        let titleColor = "text-black";
+
+        if (inventory.includes("妖刀村正 (Youtou Muramasa)")) {
+            finalTitle = "DEMON SLAYER";
+            titleColor = "text-red-600";
+        } else if (inventory.includes("竜の血 (Ryuu no Chi)")) {
+            finalTitle = "DRAGONBORN";
+            titleColor = "text-red-800";
+        } else if (inventory.includes("Katana")) {
+            finalTitle = "TRUE SAMURAI";
+            titleColor = "text-gray-800";
+        } else if (parseInt(playerHp) === parseInt(maxPlayerHp)) {
+            finalTitle = "FLAWLESS OPERATIVE";
+            titleColor = "text-red-500";
+        }
+
+        // --- RENDER UI ---
+        document.getElementById('stat-name').innerText = playerName;
+        document.getElementById('stat-hp').innerText = `${playerHp} / ${maxPlayerHp}`;
+        document.getElementById('stat-gold').innerText = `${playerGold} G`;
+        
+        const titleElement = document.getElementById('stat-title');
+        titleElement.innerText = finalTitle;
+        titleElement.className = `font-black text-xl md:text-2xl marker-font ${titleColor}`;
+
+        // --- FUNGSI ERASE RECORD (RESTART) ---
+        function startNewJourney() {
+            // Efek Glitch sebelum kehapus
+            document.body.classList.add('glitch-text');
+            document.body.style.background = "#d31212";
+            
+            setTimeout(() => {
+                localStorage.clear();
+                window.location.href = 'index.html';
+            }, 800); // Reset cepat ala terminal command
+        }
+    </script>
+</body>
+</html>

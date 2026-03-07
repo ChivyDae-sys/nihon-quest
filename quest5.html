@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nihon-Quest: Traveler's Camp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Permanent+Marker&family=Inter:wght@900&display=swap" rel="stylesheet">
+    <style>
+        :root { --p5-red: #d31212; --p5-black: #000000; --p5-white: #ffffff; --p5-gold: #ffd700; --p5-orange: #d35400; }
+        body { background-color: var(--p5-black); color: var(--p5-white); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        
+        /* Tema Api Unggun */
+        .persona-bg { background: linear-gradient(135deg, #1a0a00 0%, #2a1000 100%); background-attachment: fixed; }
+        .bg-lines { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(45deg, #000, #000 10px, #110500 10px, #110500 20px); z-index: -1; opacity: 0.8; }
+        
+        .pixel-font { font-family: 'Press Start 2P', cursive; }
+        .marker-font { font-family: 'Permanent Marker', cursive; }
+        .persona-border { border: 4px solid var(--p5-white); transform: skew(-2deg); box-shadow: 8px 8px 0px var(--p5-orange); }
+        .btn-persona { background-color: var(--p5-white); color: var(--p5-black); font-weight: 900; transform: skew(-5deg); transition: all 0.2s ease; border-left: 10px solid var(--p5-orange); border-bottom: 4px solid #999; }
+        .btn-persona:hover { background-color: var(--p5-orange); color: var(--p5-white); transform: skew(-5deg) scale(1.05); padding-left: 1.5rem; border-color: #a04000; }
+        .gold-box { background-color: var(--p5-black); border: 2px solid var(--p5-gold); transform: skew(-10deg); box-shadow: 4px 4px 0px var(--p5-gold); }
+        .inventory-box { border: 2px dashed var(--p5-orange); background: rgba(0,0,0,0.8); }
+
+        .bar-container { background: #333; height: 12px; transform: skew(-10deg); border: 2px solid white; position: relative; }
+        .hp-fill { width: 100%; height: 100%; background: var(--p5-red); box-shadow: 0 0 10px var(--p5-red); transition: width 0.3s; }
+
+        .npc-float { animation: float 3s infinite alternate ease-in-out; }
+        @keyframes float { 0% { transform: translateY(0); } 100% { transform: translateY(-8px); } }
+        
+        .fire-flicker { animation: flicker 0.5s infinite alternate; }
+        @keyframes flicker { 0% { opacity: 0.8; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1.05); } }
+
+        /* ANIMASI TRANSISI STAGE 3 */
+        #stage-transition {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: var(--p5-black); z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            animation: fadeOutStage 1s ease-in-out 2.5s forwards; pointer-events: none;
+        }
+        @keyframes fadeOutStage { 0% { opacity: 1; visibility: visible; } 100% { opacity: 0; visibility: hidden; } }
+        .glitch-text { text-shadow: 3px 0 var(--p5-orange), -3px 0 var(--p5-gold); animation: glitch 0.3s infinite; }
+        @keyframes glitch { 0% { transform: translate(0) } 20% { transform: translate(-2px, 2px) } 40% { transform: translate(-2px, -2px) } 60% { transform: translate(2px, 2px) } 80% { transform: translate(2px, -2px) } 100% { transform: translate(0) } }
+
+        /* EFEK VISUAL ITEM (JUICE) */
+        .flash-heal { animation: flashGreen 0.5s ease-out; }
+        @keyframes flashGreen { 0% { box-shadow: inset 0 0 100px 50px rgba(46, 204, 113, 0.6); } 100% { box-shadow: inset 0 0 0 0 rgba(46, 204, 113, 0); } }
+        
+        .flash-buff { animation: flashGold 0.7s ease-out; }
+        @keyframes flashGold { 0% { box-shadow: inset 0 0 150px 80px rgba(241, 196, 15, 0.7); } 100% { box-shadow: inset 0 0 0 0 rgba(241, 196, 15, 0); } }
+        
+        .shake { animation: shake 0.3s; }
+        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 40% { transform: translate(3px, 2px) rotate(-1deg); } 100% { transform: translate(1px, -1px) rotate(0deg); } }
+    </style>
+</head>
+<body class="persona-bg p-6 md:p-12">
+    <div id="stage-transition">
+        <h1 class="marker-font text-6xl md:text-8xl text-white mb-4 glitch-text transform -skew-x-12">STAGE 3</h1>
+        <h2 class="pixel-font text-sm md:text-lg text-yellow-500 tracking-widest border-y-2 border-yellow-500 py-2">THE TRAVELER'S PATH</h2>
+    </div>
+
+    <div class="bg-lines"></div>
+
+    <header class="max-w-5xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-4 text-black transform -rotate-1 shadow-[10px_10px_0px_#d35400]">
+        <div class="flex flex-col ml-2">
+            <span class="pixel-font text-[8px] text-orange-600 mb-1">STAGE 3 | QUEST 5 (REST AREA)</span>
+            <h1 class="marker-font text-2xl md:text-3xl uppercase tracking-tighter">TRAVELER'S CAMP</h1>
+        </div>
+        
+        <div class="flex flex-wrap gap-4 items-end mt-4 md:mt-0">
+            <div class="w-24 md:w-32">
+                <p class="pixel-font text-[10px] mb-1">HP <span id="hp-text-header" class="text-[8px] text-gray-400"></span></p>
+                <div class="bar-container"><div id="player-hp" class="hp-fill"></div></div>
+            </div>
+            <div class="gold-box px-4 py-2 text-white text-right w-24">
+                <p class="pixel-font text-[8px] text-yellow-400 mb-1">GOLD</p>
+                <p id="gold-display" class="marker-font text-xl text-yellow-400">0</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+        
+        <div class="flex flex-col items-center justify-center space-y-4">
+            <div class="relative mt-8 flex flex-col items-center">
+                <div class="fire-flicker w-48 h-48 bg-orange-600 rounded-full absolute top-10 -z-10 mix-blend-screen blur-2xl"></div>
+                
+                <img src="merchant.png" alt="Merchant" class="npc-float w-48 h-48 object-contain drop-shadow-[0_0_20px_rgba(211,84,0,0.8)] z-10">
+                
+                <div class="bg-black text-white marker-font px-4 py-1 rotate-3 border-2 border-[#d35400] mt-2 w-64 text-center shadow-[4px_4px_0px_#d35400] z-20">
+                    MERCHANT
+                </div>
+            </div>
+            
+            <div class="w-full persona-border bg-black p-6 relative mt-4">
+                <div class="absolute -top-4 left-4 bg-[#d35400] text-white px-3 py-1 marker-font text-lg skew-x-[-10deg]">MERCHANT LOG</div>
+                <p id="dialog-main" class="text-lg font-black mt-2 leading-relaxed text-orange-100">「よく来たな、旅の者。何か買っていくか？」</p>
+                <p id="dialog-romaji" class="text-gray-400 italic text-sm mt-1">(Yoku kita na, tabi no mono. Nanika katte iku ka? - Selamat datang, pengembara. Mau beli sesuatu?)</p>
+            </div>
+
+            <div class="inventory-box w-full p-4 transform -rotate-1 mt-4">
+                <h3 class="pixel-font text-[10px] mb-2 text-orange-500">EQUIPPED ITEMS</h3>
+                <div id="inventory-list" class="flex gap-3 flex-wrap">
+                    <p class="text-gray-500 italic text-sm">Tas masih kosong...</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="action-menu" class="grid grid-cols-1 gap-4">
+            </div>
+    </main>
+
+    <script>
+        const bgm = new Audio('bgm.mp3');
+        bgm.loop = true; 
+        function handleBGM() {
+            if (localStorage.getItem('playMusic') === 'true') {
+                let savedTime = parseFloat(localStorage.getItem('musicTime')) || 0;
+                bgm.currentTime = savedTime;
+                bgm.play().catch(() => {});
+                setInterval(() => { if (!bgm.paused) localStorage.setItem('musicTime', bgm.currentTime); }, 1000);
+            }
+        }
+        window.addEventListener('load', handleBGM);
+        window.addEventListener('click', () => { if (bgm.paused && localStorage.getItem('playMusic') === 'true') bgm.play(); }, { once: true });
+
+        // --- SISTEM LOAD DATA ANTI-BUG ---
+        let playerGold = parseInt(localStorage.getItem('playerGold')) || 0;
+        
+        // Load Inventory yang aman
+        let inventory = [];
+        try {
+            let savedInv = localStorage.getItem('inventory');
+            if (savedInv) inventory = JSON.parse(savedInv);
+        } catch(e) { console.log("Inventory aman."); }
+
+        // Atur HP dan Max HP
+        let maxPlayerHp = parseInt(localStorage.getItem('maxPlayerHp')) || 100;
+        let savedHp = parseInt(localStorage.getItem('playerHp'));
+        let playerHp = !isNaN(savedHp) ? savedHp : maxPlayerHp;
+
+        // BUG FIX: Kunci maksimal HP di 150 kalau udah punya Jimat
+        if (inventory.includes("Omamori") || maxPlayerHp > 150) {
+            maxPlayerHp = 150;
+        }
+        if (playerHp > maxPlayerHp) {
+            playerHp = maxPlayerHp;
+        }
+
+        // Simpan ulang data yang udah bersih
+        localStorage.setItem('maxPlayerHp', maxPlayerHp);
+        localStorage.setItem('playerHp', playerHp);
+
+        document.getElementById('gold-display').innerText = playerGold;
+        updateHpUI();
+        updateInventoryUI();
+
+        function updateHpUI() {
+            document.getElementById('player-hp').style.width = (playerHp / maxPlayerHp * 100) + '%';
+            document.getElementById('hp-text-header').innerText = `(${playerHp}/${maxPlayerHp})`;
+        }
+
+        function updateInventoryUI() {
+            const invList = document.getElementById('inventory-list');
+            if (inventory.length > 0) {
+                invList.innerHTML = ''; 
+                inventory.forEach(item => {
+                    invList.innerHTML += `<div class="bg-white text-black font-bold px-3 py-1 text-sm transform skew-x-6 border border-black shadow-[2px_2px_0px_#d35400]">🛡️ ${item}</div>`;
+                });
+            }
+        }
+
+        function renderMainMenu() {
+            const menu = document.getElementById('action-menu');
+            menu.innerHTML = `
+                <div class="bg-[#d35400] p-2 transform -skew-x-12 inline-block mb-2 shadow-[4px_4px_0px_#ffffff]">
+                    <p class="marker-font text-2xl px-2 text-white">WHAT DO YOU NEED?</p>
+                </div>
+                
+                <button onclick="openBuyMenu()" class="btn-persona p-5 group text-left flex flex-col">
+                    <span class="pixel-font text-sm">01. かう (Kau)</span>
+                    <span class="font-bold text-gray-500 group-hover:text-black mt-1">- Beli Item (Pakai Gold)</span>
+                </button>
+                
+                <button onclick="npcTalk()" class="btn-persona p-5 group text-left flex flex-col mt-2">
+                    <span class="pixel-font text-sm">02. はなす (Hanasu)</span>
+                    <span class="font-bold text-gray-500 group-hover:text-black mt-1">- Ngobrol dengan Pedagang</span>
+                </button>
+
+                <button onclick="leaveCamp()" class="btn-persona p-5 group text-left flex flex-col hover:bg-black border-red-600 mt-4">
+                    <span class="pixel-font text-sm text-red-600">03. にげる (Nigeru)</span>
+                    <span class="font-bold text-gray-500 group-hover:text-red-500 mt-1">- Tinggalkan Kemah (Lanjut Quest 6)</span>
+                </button>
+            `;
+        }
+        
+        renderMainMenu();
+
+        function npcTalk() {
+            const dialogMain = document.getElementById('dialog-main');
+            const dialogRomaji = document.getElementById('dialog-romaji');
+            dialogMain.innerHTML = "「先の道は危険だぞ。しっかり準備しておけ！」";
+            dialogRomaji.innerHTML = "(Saki no michi wa kiken da zo. Shikkari junbi shite oke! - Jalan di depan berbahaya. Bersiaplah dengan baik!)";
+        }
+
+        function openBuyMenu() {
+            const menu = document.getElementById('action-menu');
+            menu.innerHTML = `
+                <div class="bg-yellow-500 p-2 transform -skew-x-12 inline-block shadow-[4px_4px_0px_#ffffff]">
+                    <p class="marker-font text-xl px-2 text-black">SHOP MENU</p>
+                </div>
+                
+                <button onclick="buyItem('onigiri')" class="btn-persona p-4 text-left border-gray-400 group">
+                    <span class="font-bold text-lg">A. おにぎり (Onigiri) - <span class="text-yellow-600">150 G</span></span>
+                    <span class="block text-xs text-gray-400 mt-1">Isi Darah / Heal +50 HP</span>
+                </button>
+                
+                <button onclick="buyItem('omamori')" class="btn-persona p-4 text-left border-gray-400 group">
+                    <span class="font-bold text-lg">B. お守り (Omamori) - <span class="text-yellow-600">400 G</span></span>
+                    <span class="block text-xs text-gray-400 mt-1">Jimat Sakti / Max HP jadi 150</span>
+                </button>
+
+                <button onclick="renderMainMenu()" class="mt-4 text-gray-400 underline font-bold hover:text-white text-right">BACK</button>
+            `;
+        }
+
+        function buyItem(itemType) {
+            const dialogMain = document.getElementById('dialog-main');
+            const dialogRomaji = document.getElementById('dialog-romaji');
+            
+            // Hapus efek sebelumnya biar bisa di-trigger lagi
+            document.body.classList.remove('shake', 'flash-heal', 'flash-buff');
+            void document.body.offsetWidth;
+
+            if (itemType === 'onigiri') {
+                if (playerGold >= 150) {
+                    if (playerHp >= maxPlayerHp) {
+                        dialogMain.innerHTML = "「HPはもう満タンだぞ！」";
+                        dialogRomaji.innerHTML = "(HP wa mou mantan da zo! - Darahmu sudah penuh!)";
+                        return;
+                    }
+                    playerGold -= 150;
+                    playerHp += 50;
+                    if (playerHp > maxPlayerHp) playerHp = maxPlayerHp;
+                    
+                    document.body.classList.add('flash-heal');
+                    dialogMain.innerHTML = "「おにぎりを食べた！」<br><span class='text-green-400 font-black text-2xl tracking-widest'>[ HP RECOVERED! ]</span>";
+                    dialogRomaji.innerHTML = "(Onigiri o tabeta! - Kamu makan onigiri dan HP pulih!)";
+                } else {
+                    noMoneyDialog(); return;
+                }
+            } else if (itemType === 'omamori') {
+                if (inventory.includes("Omamori") || maxPlayerHp >= 150) {
+                    dialogMain.innerHTML = "「お守りは一つで十分だ！」";
+                    dialogRomaji.innerHTML = "(Omamori wa hitotsu de juubun da! - Satu jimat saja sudah cukup!)";
+                    return;
+                }
+                if (playerGold >= 400) {
+                    playerGold -= 400;
+                    maxPlayerHp = 150; // Langsung kunci ke 150
+                    playerHp += 50;
+                    if (playerHp > maxPlayerHp) playerHp = maxPlayerHp;
+                    
+                    inventory.push("Omamori");
+                    document.body.classList.add('shake', 'flash-buff');
+                    dialogMain.innerHTML = "「お守りを手に入れた！」<br><span class='text-yellow-400 font-black text-2xl tracking-widest'>[ MAX HP INCREASED! ]</span>";
+                    dialogRomaji.innerHTML = "(Omamori o te ni ireta! - Mendapat jimat perlindungan!)";
+                } else {
+                    noMoneyDialog(); return;
+                }
+            }
+
+            // Simpan ke brankas
+            localStorage.setItem('playerGold', playerGold);
+            localStorage.setItem('playerHp', playerHp);
+            localStorage.setItem('maxPlayerHp', maxPlayerHp);
+            localStorage.setItem('inventory', JSON.stringify(inventory));
+            
+            document.getElementById('gold-display').innerText = playerGold;
+            updateHpUI();
+            updateInventoryUI();
+        }
+
+        function noMoneyDialog() {
+            const dialogMain = document.getElementById('dialog-main');
+            const dialogRomaji = document.getElementById('dialog-romaji');
+            dialogMain.innerHTML = "「お金が足りないぞ、旅の者よ...」";
+            dialogRomaji.innerHTML = "(Okane ga tarinai zo... - Uangmu tidak cukup...)";
+        }
+
+        function leaveCamp() {
+            const dialogMain = document.getElementById('dialog-main');
+            const dialogRomaji = document.getElementById('dialog-romaji'); 
+            
+            dialogMain.innerHTML = "<span class='text-orange-500'>「気をつけてな！」</span>";
+            dialogRomaji.innerHTML = "(Ki o tsukete na! - Hati-hati di jalan!)"; 
+            
+            const menu = document.getElementById('action-menu');
+            menu.innerHTML = `
+                <div class="bg-black border-4 border-[#d35400] p-8 text-center transform skew-x-[-2deg] shadow-[8px_8px_0px_#d35400] mt-4">
+                    <h1 class="marker-font text-3xl mb-4 text-white">LEAVING CAMP...</h1>
+                    <p class="pixel-font text-xs mb-8 text-gray-400 leading-relaxed">Persiapan selesai. Petualangan berlanjut.</p>
+                    <a href="quest6.html" class="inline-block bg-white text-black px-8 py-4 border-2 border-black hover:bg-[#d35400] hover:text-white transition-colors marker-font text-2xl transform skew-x-[-10deg]">
+                        ENTER NINJA BRIDGE ▶
+                    </a>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

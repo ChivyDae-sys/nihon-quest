@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nihon-Quest: Maboroshi Forest</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Permanent+Marker&family=Inter:wght@900&display=swap" rel="stylesheet">
+    <style>
+        :root { --p5-red: #d31212; --p5-black: #000000; --p5-white: #ffffff; --p5-gold: #ffd700; }
+        body { background-color: var(--p5-black); color: var(--p5-white); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .persona-bg { background: linear-gradient(135deg, #000 0%, #1a0000 100%); background-attachment: fixed; }
+        .bg-lines { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(45deg, #111, #111 10px, #000 10px, #000 20px); z-index: -1; opacity: 0.5; }
+        
+        .pixel-font { font-family: 'Press Start 2P', cursive; }
+        .marker-font { font-family: 'Permanent Marker', cursive; }
+        .persona-border { border: 4px solid var(--p5-white); transform: skew(-2deg); box-shadow: 8px 8px 0px var(--p5-red); }
+        .btn-persona { background-color: var(--p5-white); color: var(--p5-black); font-weight: 900; transform: skew(-5deg); transition: all 0.2s ease; border-left: 10px solid var(--p5-red); border-bottom: 4px solid #999; }
+        .btn-persona:hover { background-color: var(--p5-red); color: var(--p5-white); transform: skew(-5deg) scale(1.05); padding-left: 1.5rem; border-color: #7a0000; }
+        .gold-box { background-color: var(--p5-black); border: 2px solid var(--p5-gold); transform: skew(-10deg); box-shadow: 4px 4px 0px var(--p5-gold); }
+        .inventory-box { border: 2px dashed var(--p5-white); background: rgba(0,0,0,0.8); }
+
+        .bar-container { background: #333; height: 12px; transform: skew(-10deg); border: 2px solid white; }
+        .hp-fill { width: 100%; height: 100%; background: var(--p5-red); box-shadow: 0 0 10px var(--p5-red); transition: width 0.3s; }
+        .mp-fill { width: 100%; height: 100%; background: #fff; }
+
+        .slime-hp-container { background: #333; height: 16px; border: 2px solid white; width: 100%; margin-top: 10px; transform: skew(-5deg); position: relative; }
+        .slime-hp-fill { background: #ff0055; width: 100%; height: 100%; transition: width 0.4s ease-out; }
+
+        .monster-bounce { animation: bounce 1.5s infinite alternate; }
+        @keyframes bounce { 0% { transform: translateY(0); } 100% { transform: translateY(-15px) scale(1.05); } }
+        
+        .shake { animation: shake 0.3s; }
+        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 40% { transform: translate(3px, 2px) rotate(-1deg); } 100% { transform: translate(1px, -1px) rotate(0deg); } }
+        
+        .glitch-text { text-shadow: 2px 0 red, -2px 0 blue; animation: glitch 0.2s infinite; }
+        @keyframes glitch { 0% { transform: translate(0) } 20% { transform: translate(-2px, 2px) } 40% { transform: translate(-2px, -2px) } 60% { transform: translate(2px, 2px) } 80% { transform: translate(2px, -2px) } 100% { transform: translate(0) } }
+    </style>
+</head>
+<body class="persona-bg p-6 md:p-12">
+    <div class="bg-lines"></div>
+
+    <header class="max-w-5xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-4 text-black transform -rotate-1 shadow-[10px_10px_0px_#d31212]">
+        <div class="flex flex-col ml-2">
+            <span class="pixel-font text-[8px] text-red-600 mb-1">STAGE 1 | QUEST 2</span>
+            <h1 class="marker-font text-2xl md:text-3xl uppercase tracking-tighter">MABOROSHI FOREST</h1>
+        </div>
+        
+        <div class="flex flex-wrap gap-4 items-end mt-4 md:mt-0">
+            <div class="w-24 md:w-32"><p class="pixel-font text-[10px] mb-1">HP</p><div class="bar-container"><div id="player-hp" class="hp-fill"></div></div></div>
+            <div class="w-24 md:w-32"><p class="pixel-font text-[10px] mb-1">SP</p><div class="bar-container"><div class="mp-fill"></div></div></div>
+            <div class="gold-box px-4 py-2 text-white text-right w-24">
+                <p class="pixel-font text-[8px] text-yellow-400 mb-1">GOLD</p>
+                <p id="gold-display" class="marker-font text-xl text-yellow-400">0</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+        
+        <div class="flex flex-col items-center justify-center space-y-4">
+            <div class="monster-bounce relative mt-8 flex flex-col items-center">
+                <div class="w-32 h-32 bg-red-600 rounded-full absolute top-0 -z-10 mix-blend-multiply blur-md"></div>
+                <img src="slime.png" alt="Slime Monster" class="w-48 h-48 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">
+                
+                <div class="bg-white text-black marker-font px-4 py-1 rotate-3 border-2 border-black mt-2 w-48 text-center">
+                    SLIME LV. 5
+                    <div class="slime-hp-container">
+                        <div id="slime-hp-bar" class="slime-hp-fill"></div>
+                        <p id="slime-hp-text" class="absolute inset-0 text-[10px] pixel-font text-white leading-[12px] drop-shadow-md z-10">50/50</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="w-full persona-border bg-black p-6 relative mt-4">
+                <div class="absolute -top-4 left-4 bg-red-600 px-3 py-1 marker-font text-lg skew-x-[-10deg]">BATTLE LOG</div>
+                <p id="dialog-main" class="text-lg font-black mt-2 leading-relaxed">「スライム が あらわれた！」</p>
+                <p id="dialog-romaji" class="text-gray-400 italic text-sm mt-1">(Suraimu ga arawareta! - Seekor Slime telah muncul!)</p>
+            </div>
+
+            <div class="inventory-box w-full p-4 transform -rotate-1">
+                <h3 class="pixel-font text-[10px] mb-2 text-red-500">EQUIPPED ITEMS</h3>
+                <div id="inventory-list" class="flex gap-3 flex-wrap">
+                    <p class="text-gray-500 italic text-sm">Tas masih kosong...</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="action-menu" class="grid grid-cols-1 gap-4">
+            </div>
+    </main>
+
+    <script>
+        // --- SISTEM BGM GLOBAL ---
+        const bgm = new Audio('bgm.mp3');
+        bgm.loop = true; 
+
+        function handleBGM() {
+            if (localStorage.getItem('playMusic') === 'true') {
+                let savedTime = parseFloat(localStorage.getItem('musicTime')) || 0;
+                bgm.currentTime = savedTime;
+                bgm.play().catch(() => {});
+                setInterval(() => {
+                    if (!bgm.paused) localStorage.setItem('musicTime', bgm.currentTime);
+                }, 1000);
+            }
+        }
+        window.addEventListener('load', handleBGM);
+        window.addEventListener('click', () => {
+            if (bgm.paused && localStorage.getItem('playMusic') === 'true') bgm.play();
+        }, { once: true });
+        // --------------------------
+
+        let playerName = localStorage.getItem('playerName') || 'HERO';
+        let playerGold = 0;
+        let inventory = [];
+        let lootedWords = []; 
+        
+        let playerHp = 100;
+        const maxPlayerHp = 100;
+
+        let slimeHp = 50;
+        const maxSlimeHp = 50;
+        let isGameOver = false;
+
+        // --- DATA KUIS FLASHCARD ---
+        const flashcards = [
+            // Kosakata Benda
+            { question: "Apa bahasa Jepangnya 'Pedang'?", a: "かたな (Katana)", b: "たて (Tate)", c: "ほん (Hon)", correct: 'a' },
+            { question: "Apa bahasa Jepangnya 'Sepatu'?", a: "かばん (Kaban)", b: "くつ (Kutsu)", c: "ぼうし (Boushi)", correct: 'b' },
+            { question: "Apa arti dari 'Kusuri' (薬)?", a: "Racun", b: "Air", c: "Obat", correct: 'c' },
+            
+            // Kosakata Kerja (Doushi)
+            { question: "Apa bahasa Jepangnya 'Berlari'?", a: "走る (Hashiru)", b: "歩く (Aruku)", c: "泳ぐ (Oyogu)", correct: 'a' },
+            { question: "Apa bahasa Jepangnya 'Makan'?", a: "飲む (Nomu)", b: "食べる (Taberu)", c: "行く (Iku)", correct: 'b' },
+            { question: "Arti dari kata 'Oboeru' (覚える)?", a: "Lupa", b: "Mengingat", c: "Tidur", correct: 'b' },
+
+            // Lawan Kata (Keiyoushi)
+            { question: "Lawan kata dari 'Murah' (Yasui)?", a: "高い (Takai)", b: "大きい (Ookii)", c: "新しい (Atarashii)", correct: 'a' },
+            { question: "Lawan kata dari 'Atsui' (Panas)?", a: "Samui (Dingin)", b: "Kurai (Gelap)", c: "Semai (Sempit)", correct: 'a' },
+            
+            // Tata Bahasa Dasar (Bunpou)
+            { question: "Manakah yang merupakan Kata Kerja Golongan 1?", a: "食べる (Taberu)", b: "見る (Miru)", c: "書く (Kaku)", correct: 'c' },
+            { question: "Bentuk negatif (Nai-kei) dari 'Iku' (Pergi)?", a: "Ikanai", b: "Ikinai", c: "Ikanakatta", correct: 'a' },
+            { question: "Bentuk lampau (Ta-kei) dari 'Nomu' (Minum)?", a: "Nonda", b: "Nomita", c: "Nonda koto", correct: 'a' },
+            { question: "Partikel untuk menunjukkan arah/tujuan?", a: "を (Wo)", b: "に (Ni)", c: "が (Ga)", correct: 'b' }
+        ];
+        let currentQuiz = null;
+
+        try {
+            let savedGold = parseInt(localStorage.getItem('playerGold'));
+            if (!isNaN(savedGold)) playerGold = savedGold;
+            
+            let savedInv = localStorage.getItem('inventory');
+            if (savedInv) inventory = JSON.parse(savedInv);
+
+            let savedWords = localStorage.getItem('lootedWords');
+            if (savedWords) lootedWords = JSON.parse(savedWords);
+        } catch (e) { console.log("Save data aman."); }
+
+        document.getElementById('gold-display').innerText = playerGold;
+        
+        const invList = document.getElementById('inventory-list');
+        if (inventory.length > 0) {
+            invList.innerHTML = ''; 
+            inventory.forEach(item => {
+                invList.innerHTML += `<div class="bg-white text-black font-bold px-3 py-1 text-sm transform skew-x-6 border border-black shadow-[2px_2px_0px_#d31212]">🗡️ ${item}</div>`;
+            });
+        }
+
+        // Render Menu Awal
+        function renderMainMenu() {
+            const menu = document.getElementById('action-menu');
+            menu.innerHTML = `
+                <div class="bg-red-600 p-2 transform -skew-x-12 inline-block mb-2 shadow-[4px_4px_0px_#ffffff]">
+                    <p class="marker-font text-2xl px-2 text-white">CHOOSE YOUR MOVE!</p>
+                </div>
+                
+                <button onclick="startQuiz()" class="btn-persona p-5 group text-left flex flex-col">
+                    <span class="pixel-font text-sm">01. たたかう (Tatakau)</span>
+                    <span class="font-bold text-gray-400 group-hover:text-white mt-1">- Serang (Uji Kosakata!)</span>
+                </button>
+
+                <button onclick="battleAction('run')" class="btn-persona p-5 group text-left flex flex-col hover:bg-black border-red-600 mt-4">
+                    <span class="pixel-font text-sm text-red-600">02. にげる (Nigeru)</span>
+                    <span class="font-bold text-gray-400 group-hover:text-red-500 mt-1">- Kabur dari pertarungan</span>
+                </button>
+            `;
+        }
+        
+        // Panggil menu saat pertama kali load
+        renderMainMenu();
+
+        // Mulai Kuis Flashcard
+        function startQuiz() {
+            // Pilih pertanyaan acak
+            currentQuiz = flashcards[Math.floor(Math.random() * flashcards.length)];
+            
+            const menu = document.getElementById('action-menu');
+            menu.innerHTML = `
+                <div class="bg-blue-600 p-2 transform -skew-x-12 inline-block shadow-[4px_4px_0px_#ffffff]">
+                    <p class="marker-font text-xl px-2 text-white">KOTOBA QUIZ!</p>
+                </div>
+                
+                <div class="bg-black border-2 border-white p-4 mb-2 transform skew-x-[-2deg]">
+                    <p class="font-bold text-white text-lg">${currentQuiz.question}</p>
+                </div>
+
+                <button onclick="checkAnswer('a')" class="btn-persona p-4 text-left border-gray-400"><span class="font-bold text-sm">A. ${currentQuiz.a}</span></button>
+                <button onclick="checkAnswer('b')" class="btn-persona p-4 text-left border-gray-400"><span class="font-bold text-sm">B. ${currentQuiz.b}</span></button>
+                <button onclick="checkAnswer('c')" class="btn-persona p-4 text-left border-gray-400"><span class="font-bold text-sm">C. ${currentQuiz.c}</span></button>
+                
+                <button onclick="renderMainMenu()" class="mt-4 text-gray-400 underline font-bold hover:text-white text-right">BACK</button>
+            `;
+        }
+
+        // Cek Jawaban Kuis
+        function checkAnswer(selectedOption) {
+            const dialogMain = document.getElementById('dialog-main');
+            const dialogRomaji = document.getElementById('dialog-romaji');
+            
+            document.body.classList.remove('shake');
+            void document.body.offsetWidth;
+            document.body.classList.add('shake');
+
+            if (selectedOption === currentQuiz.correct) {
+                // JAWABAN BENAR = SERANG SLIME
+                let damage = inventory.includes("Katana") ? 50 : 25;
+                slimeHp -= damage;
+                if(slimeHp < 0) slimeHp = 0;
+
+                document.getElementById('slime-hp-bar').style.width = (slimeHp / maxSlimeHp * 100) + '%';
+                document.getElementById('slime-hp-text').innerText = slimeHp + '/' + maxSlimeHp;
+
+                dialogMain.innerHTML = `「正解！見事な攻撃だ！」<br><span class='text-red-500'>${damage} ダメージ！</span>`;
+                dialogRomaji.innerHTML = "(Seikai! Migoto na kougeki da! - Jawaban Benar! Serangan yang brilian!)";
+
+                if(slimeHp === 0) {
+                    setTimeout(triggerWin, 800); 
+                } else {
+                    renderMainMenu();
+                }
+
+            } else {
+                // JAWABAN SALAH = SLIME MENYERANG
+                playerHp -= 20;
+                if(playerHp < 0) playerHp = 0;
+                
+                document.getElementById('player-hp').style.width = (playerHp / maxPlayerHp * 100) + '%';
+                
+                dialogMain.innerHTML = `「間違い！隙だらけだ！」<br><span class='text-blue-400'>スライムの反撃！20 ダメージ！</span>`;
+                dialogRomaji.innerHTML = "(Machigai! Suki darake da! - Salah! Pertahananmu terbuka lebar!)";
+
+                if(playerHp <= 0) {
+                    setTimeout(triggerGameOver, 800);
+                } else {
+                    renderMainMenu();
+                }
+            }
+        }
+
+        function battleAction(action) {
+            if(isGameOver) return; 
+            if (action === 'run') {
+                triggerGameOver();
+            }
+        }
+
+        function triggerGameOver() {
+            isGameOver = true;
+            document.getElementById('player-hp').style.width = '0%';
+            const dialogMain = document.getElementById('dialog-main');
+            
+            dialogMain.innerHTML = "<span class='text-red-600'>「目の前が真っ暗になった...」</span>";
+            
+            const menu = document.getElementById('action-menu');
+            menu.innerHTML = `
+                <div class="bg-black border-4 border-red-600 p-8 text-center transform skew-x-[-2deg] shadow-[8px_8px_0px_#d31212] mt-4">
+                    <h1 class="marker-font text-5xl md:text-7xl mb-4 text-red-600 glitch-text">GAME OVER</h1>
+                    <p class="pixel-font text-xs mb-8 text-gray-400 leading-relaxed">Petualangan ${playerName} berakhir di sini.</p>
+                    <a href="index.html" class="inline-block bg-white text-black px-8 py-4 border-2 border-black hover:bg-red-600 hover:text-white transition-colors marker-font text-2xl transform skew-x-[-10deg]">
+                        TRY AGAIN
+                    </a>
+                </div>
+            `;
+        }
+
+        function triggerWin() {
+    isGameOver = true;
+    
+    playerGold += 200;
+    localStorage.setItem('playerGold', playerGold);
+    
+    // --- TAMBAHKAN BARIS INI ---
+    localStorage.setItem('playerHp', playerHp); 
+    // ---------------------------
+
+    document.getElementById('gold-display').innerText = playerGold;
+
+    const newWord = "倒す (Taosu)";
+    if(!lootedWords.includes(newWord)) {
+        lootedWords.push(newWord);
+        localStorage.setItem('lootedWords', JSON.stringify(lootedWords));
+    }
+
+    const menu = document.getElementById('action-menu');
+    menu.innerHTML = `
+        <div class="bg-white border-4 border-black p-8 text-center transform skew-x-[2deg] shadow-[8px_8px_0px_#ffffff] mt-4">
+            <h1 class="marker-font text-5xl md:text-6xl mb-4 text-black">VICTORY!</h1>
+            <p class="pixel-font text-[10px] mb-2 text-gray-600">REWARDS:</p>
+            <p class="marker-font text-yellow-500 text-2xl">+ 200 GOLD</p>
+            <p class="marker-font text-blue-600 text-xl mt-2">+ KOTOBA: 倒す (Taosu / Mengalahkan)</p>
+            
+            <a href="quest3.html" class="inline-block mt-8 bg-black text-white px-8 py-4 border-2 border-white hover:bg-red-600 transition-colors marker-font text-xl transform skew-x-[-10deg]">
+                NEXT: GOBLIN CAVE ▶
+            </a>
+        </div>
+    `;
+}
+    </script>
+</body>
+</html>
