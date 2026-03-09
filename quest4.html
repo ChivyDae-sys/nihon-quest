@@ -48,7 +48,7 @@
         
         <div class="flex flex-wrap gap-4 items-end mt-4 md:mt-0">
             <div class="w-24 md:w-32">
-                <p class="pixel-font text-[10px] mb-1">HP</p>
+                <p class="pixel-font text-[10px] mb-1 text-gray-800">HP <span id="hp-text-header" class="text-[8px] text-gray-500"></span></p>
                 <div class="bar-container"><div id="player-hp" class="hp-fill"></div></div>
             </div>
             <div class="gold-box px-4 py-2 text-white text-right w-24">
@@ -69,7 +69,7 @@
                     ROCK GOLEM LV. 30
                     <div class="golem-hp-container">
                         <div id="golem-hp-bar" class="golem-hp-fill"></div>
-                        <p id="golem-hp-text" class="absolute inset-0 text-[10px] pixel-font text-white leading-[12px] drop-shadow-md z-10">150/150</p>
+                        <p id="golem-hp-text" class="absolute inset-0 text-[10px] pixel-font text-white leading-[12px] drop-shadow-md z-10 text-center">150/150</p>
                     </div>
                 </div>
             </div>
@@ -101,8 +101,13 @@
 
         // --- LOAD DATA PLAYER ---
         let playerName = localStorage.getItem('playerName') || 'HERO';
-        let playerGold = parseInt(localStorage.getItem('playerGold')) || 0;
+        
+        // Pengecekan Gold & HP biar nggak keriset
+        let savedGold = parseInt(localStorage.getItem('playerGold'));
+        let playerGold = !isNaN(savedGold) ? savedGold : 0; 
+        
         let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
+        
         let maxPlayerHp = parseInt(localStorage.getItem('maxPlayerHp')) || 100;
         let savedHp = parseInt(localStorage.getItem('playerHp'));
         let playerHp = !isNaN(savedHp) ? savedHp : maxPlayerHp;
@@ -112,9 +117,15 @@
         const maxGolemHp = 150;
         let isGameOver = false;
 
+        // --- FUNGSI UPDATE UI HP ---
+        function updateHpUI() {
+            document.getElementById('player-hp').style.width = (playerHp / maxPlayerHp * 100) + '%';
+            document.getElementById('hp-text-header').innerText = `(${playerHp}/${maxPlayerHp})`;
+        }
+
         // Update UI Awal
         document.getElementById('gold-display').innerText = playerGold;
-        document.getElementById('player-hp').style.width = (playerHp / maxPlayerHp * 100) + '%';
+        updateHpUI();
         document.getElementById('golem-hp-bar').style.width = '100%';
 
         // --- DATA KUIS PARTIKEL ---
@@ -153,6 +164,8 @@
         function startAttackQuiz() {
             currentQuiz = particleQuizzes[Math.floor(Math.random() * particleQuizzes.length)];
             const menu = document.getElementById('action-menu');
+            
+            // Perbaikan warna kuis biar hitam pekat dan jadi putih kalau disorot (hover)
             menu.innerHTML = `
                 <div class="bg-blue-600 p-2 transform -skew-x-12 inline-block shadow-[4px_4px_0px_#ffffff]">
                     <p class="marker-font text-xl px-2 text-white">FILL THE BLANK!</p>
@@ -160,9 +173,21 @@
                 <div class="bg-black border-2 border-[#4a90e2] p-4 mb-2 transform skew-x-[-2deg]">
                     <p class="font-bold text-white text-xl">${currentQuiz.question}</p>
                 </div>
-                <button onclick="checkAnswer('a')" class="btn-persona p-4 text-left border-gray-400"><span class="font-bold text-lg">A. ${currentQuiz.a}</span></button>
-                <button onclick="checkAnswer('b')" class="btn-persona p-4 text-left border-gray-400"><span class="font-bold text-lg">B. ${currentQuiz.b}</span></button>
-                <button onclick="checkAnswer('c')" class="btn-persona p-4 text-left border-gray-400"><span class="font-bold text-lg">C. ${currentQuiz.c}</span></button>`;
+                
+                <button onclick="checkAnswer('a')" class="btn-persona p-4 text-left border-gray-400 group mt-2">
+                    <span class="font-bold text-lg text-blue-600 group-hover:text-white mr-2">A.</span>
+                    <span class="font-bold text-lg text-black group-hover:text-white">${currentQuiz.a}</span>
+                </button>
+                
+                <button onclick="checkAnswer('b')" class="btn-persona p-4 text-left border-gray-400 group mt-2">
+                    <span class="font-bold text-lg text-blue-600 group-hover:text-white mr-2">B.</span>
+                    <span class="font-bold text-lg text-black group-hover:text-white">${currentQuiz.b}</span>
+                </button>
+                
+                <button onclick="checkAnswer('c')" class="btn-persona p-4 text-left border-gray-400 group mt-2">
+                    <span class="font-bold text-lg text-blue-600 group-hover:text-white mr-2">C.</span>
+                    <span class="font-bold text-lg text-black group-hover:text-white">${currentQuiz.c}</span>
+                </button>`;
         }
 
         function checkAnswer(selectedOption) {
@@ -195,7 +220,9 @@
                 playerHp -= takenDamage;
                 if(playerHp < 0) playerHp = 0;
                 
-                document.getElementById('player-hp').style.width = (playerHp / maxPlayerHp * 100) + '%';
+                // Panggil fungsi Update UI dan SIMPAN HP ke Memori
+                updateHpUI();
+                localStorage.setItem('playerHp', playerHp);
                 
                 dialogMain.innerHTML = `「硬い！攻撃が弾かれた！」<br><span class='text-red-500'>ゴーレムの反撃！${takenDamage} ダメージ！</span>`;
                 dialogRomaji.innerHTML = "(Katai! Kougeki ga hajikareta! - Keras! Seranganmu terpental!)";

@@ -9,18 +9,22 @@
     <style>
         :root { --p5-red: #d31212; --p5-black: #000000; --p5-white: #ffffff; --p5-gold: #ffd700; }
         body { background-color: var(--p5-black); color: var(--p5-white); font-family: 'Inter', sans-serif; overflow-x: hidden; }
-        .persona-bg { background: linear-gradient(135deg, #000 0%, #1a0000 100%); background-attachment: fixed; }
-        .bg-lines { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(45deg, #111, #111 10px, #000 10px, #000 20px); z-index: -1; opacity: 0.5; }
+        
+        /* Tema Gelap & Miring */
+        .persona-bg { background: linear-gradient(135deg, #050000 0%, #150000 100%); background-attachment: fixed; }
+        .bg-lines { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(45deg, #000, #000 10px, #050000 10px, #050000 20px); z-index: -1; }
         
         .pixel-font { font-family: 'Press Start 2P', cursive; }
         .marker-font { font-family: 'Permanent Marker', cursive; }
-        .persona-border { border: 4px solid var(--p5-white); transform: skew(-2deg); box-shadow: 8px 8px 0px var(--p5-red); }
-        .btn-persona { background-color: var(--p5-white); color: var(--p5-black); font-weight: 900; transform: skew(-5deg); transition: all 0.2s ease; border-left: 10px solid var(--p5-red); border-bottom: 4px solid #999; }
-        .btn-persona:hover { background-color: var(--p5-red); color: var(--p5-white); transform: skew(-5deg) scale(1.05); padding-left: 1.5rem; border-color: #7a0000; }
+        
+        .persona-border { border: 4px solid var(--p5-red); transform: skew(-2deg); box-shadow: 8px 8px 0px rgba(211, 18, 18, 0.5); }
+        .btn-persona { background-color: var(--p5-white); color: var(--p5-black); font-weight: 900; transform: skew(-5deg); transition: all 0.2s ease; border-left: 10px solid var(--p5-red); border-bottom: 4px solid #555; }
+        .btn-persona:hover { background-color: var(--p5-red); color: var(--p5-white); transform: skew(-5deg) scale(1.05); padding-left: 1.5rem; border-color: #330000; box-shadow: 0 0 15px var(--p5-red); }
+        
         .gold-box { background-color: var(--p5-black); border: 2px solid var(--p5-gold); transform: skew(-10deg); box-shadow: 4px 4px 0px var(--p5-gold); }
-        .inventory-box { border: 2px dashed var(--p5-white); background: rgba(0,0,0,0.8); }
+        .inventory-box { border: 2px dashed var(--p5-red); background: rgba(0,0,0,0.8); }
 
-        .bar-container { background: #333; height: 12px; transform: skew(-10deg); border: 2px solid white; }
+        .bar-container { background: #333; height: 12px; transform: skew(-10deg); border: 2px solid white; position: relative; }
         .hp-fill { width: 100%; height: 100%; background: var(--p5-red); box-shadow: 0 0 10px var(--p5-red); transition: width 0.3s; }
         .mp-fill { width: 100%; height: 100%; background: #fff; }
 
@@ -40,15 +44,18 @@
 <body class="persona-bg p-6 md:p-12">
     <div class="bg-lines"></div>
 
-    <header class="max-w-5xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-4 text-black transform -rotate-1 shadow-[10px_10px_0px_#d31212]">
+    <header class="max-w-5xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-start md:items-center bg-black border-4 border-white p-4 text-white transform rotate-1 shadow-[10px_10px_0px_#d31212]">
         <div class="flex flex-col ml-2">
-            <span class="pixel-font text-[8px] text-red-600 mb-1">STAGE 1 | QUEST 2</span>
+            <span class="pixel-font text-[8px] text-red-500 mb-1">QUEST 2: FIRST BATTLE</span>
             <h1 class="marker-font text-2xl md:text-3xl uppercase tracking-tighter">MABOROSHI FOREST</h1>
         </div>
         
         <div class="flex flex-wrap gap-4 items-end mt-4 md:mt-0">
-            <div class="w-24 md:w-32"><p class="pixel-font text-[10px] mb-1">HP</p><div class="bar-container"><div id="player-hp" class="hp-fill"></div></div></div>
-            <div class="w-24 md:w-32"><p class="pixel-font text-[10px] mb-1">SP</p><div class="bar-container"><div class="mp-fill"></div></div></div>
+            <div class="w-24 md:w-32">
+                <p class="pixel-font text-[10px] mb-1 text-gray-300">HP <span id="hp-text-header" class="text-[8px] text-gray-500"></span></p>
+                <div class="bar-container"><div id="player-hp" class="hp-fill"></div></div>
+            </div>
+            
             <div class="gold-box px-4 py-2 text-white text-right w-24">
                 <p class="pixel-font text-[8px] text-yellow-400 mb-1">GOLD</p>
                 <p id="gold-display" class="marker-font text-xl text-yellow-400">0</p>
@@ -61,24 +68,24 @@
         <div class="flex flex-col items-center justify-center space-y-4">
             <div class="monster-bounce relative mt-8 flex flex-col items-center">
                 <div class="w-32 h-32 bg-red-600 rounded-full absolute top-0 -z-10 mix-blend-multiply blur-md"></div>
-                <img src="slime.png" alt="Slime Monster" class="w-48 h-48 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">
+                <img src="slime.png" alt="Slime Monster" class="w-48 h-48 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.5)] z-10">
                 
-                <div class="bg-white text-black marker-font px-4 py-1 rotate-3 border-2 border-black mt-2 w-48 text-center">
+                <div class="bg-red-700 text-black marker-font px-4 py-1 rotate-3 border-2 border-black mt-2 w-48 text-center shadow-[4px_4px_0px_#000] z-20">
                     SLIME LV. 5
                     <div class="slime-hp-container">
                         <div id="slime-hp-bar" class="slime-hp-fill"></div>
-                        <p id="slime-hp-text" class="absolute inset-0 text-[10px] pixel-font text-white leading-[12px] drop-shadow-md z-10">50/50</p>
+                        <p id="slime-hp-text" class="absolute inset-0 text-[10px] pixel-font text-white leading-[16px] drop-shadow-md z-10 text-center">50/50</p>
                     </div>
                 </div>
             </div>
             
             <div class="w-full persona-border bg-black p-6 relative mt-4">
-                <div class="absolute -top-4 left-4 bg-red-600 px-3 py-1 marker-font text-lg skew-x-[-10deg]">BATTLE LOG</div>
-                <p id="dialog-main" class="text-lg font-black mt-2 leading-relaxed">「スライム が あらわれた！」</p>
-                <p id="dialog-romaji" class="text-gray-400 italic text-sm mt-1">(Suraimu ga arawareta! - Seekor Slime telah muncul!)</p>
+                <div class="absolute -top-4 left-4 bg-red-600 text-white px-3 py-1 marker-font text-lg skew-x-[-10deg]">BATTLE LOG</div>
+                <p id="dialog-main" class="text-lg font-black mt-2 leading-relaxed text-red-100">「スライム が あらわれた！」</p>
+                <p id="dialog-romaji" class="text-red-300 italic text-sm mt-1">(Suraimu ga arawareta! - Seekor Slime telah muncul!)</p>
             </div>
 
-            <div class="inventory-box w-full p-4 transform -rotate-1">
+            <div class="inventory-box w-full p-4 transform -rotate-1 mt-2">
                 <h3 class="pixel-font text-[10px] mb-2 text-red-500">EQUIPPED ITEMS</h3>
                 <div id="inventory-list" class="flex gap-3 flex-wrap">
                     <p class="text-gray-500 italic text-sm">Tas masih kosong...</p>
@@ -116,8 +123,9 @@
         let inventory = [];
         let lootedWords = []; 
         
-        let playerHp = 100;
-        const maxPlayerHp = 100;
+        let maxPlayerHp = parseInt(localStorage.getItem('maxPlayerHp')) || 100;
+        let savedHp = parseInt(localStorage.getItem('playerHp'));
+        let playerHp = !isNaN(savedHp) ? savedHp : maxPlayerHp;
 
         let slimeHp = 50;
         const maxSlimeHp = 50;
@@ -159,6 +167,7 @@
         } catch (e) { console.log("Save data aman."); }
 
         document.getElementById('gold-display').innerText = playerGold;
+        updateHpUI();
         
         const invList = document.getElementById('inventory-list');
         if (inventory.length > 0) {
@@ -168,22 +177,28 @@
             });
         }
 
+        // --- FUNGSI UPDATE UI HP ---
+        function updateHpUI() {
+            document.getElementById('player-hp').style.width = (playerHp / maxPlayerHp * 100) + '%';
+            document.getElementById('hp-text-header').innerText = `(${playerHp}/${maxPlayerHp})`;
+        }
+
         // Render Menu Awal
         function renderMainMenu() {
             const menu = document.getElementById('action-menu');
             menu.innerHTML = `
-                <div class="bg-red-600 p-2 transform -skew-x-12 inline-block mb-2 shadow-[4px_4px_0px_#ffffff]">
+                <div class="bg-red-900 p-2 transform -skew-x-12 inline-block mb-2 shadow-[4px_4px_0px_#ffffff]">
                     <p class="marker-font text-2xl px-2 text-white">CHOOSE YOUR MOVE!</p>
                 </div>
                 
                 <button onclick="startQuiz()" class="btn-persona p-5 group text-left flex flex-col">
                     <span class="pixel-font text-sm">01. たたかう (Tatakau)</span>
-                    <span class="font-bold text-gray-400 group-hover:text-white mt-1">- Serang (Uji Kosakata!)</span>
+                    <span class="font-bold text-gray-500 group-hover:text-black mt-1">- Serang (Uji Kosakata!)</span>
                 </button>
 
                 <button onclick="battleAction('run')" class="btn-persona p-5 group text-left flex flex-col hover:bg-black border-red-600 mt-4">
                     <span class="pixel-font text-sm text-red-600">02. にげる (Nigeru)</span>
-                    <span class="font-bold text-gray-400 group-hover:text-red-500 mt-1">- Kabur dari pertarungan</span>
+                    <span class="font-bold text-gray-500 group-hover:text-red-500 mt-1">- Kabur dari pertarungan</span>
                 </button>
             `;
         }
@@ -202,13 +217,24 @@
                     <p class="marker-font text-xl px-2 text-white">KOTOBA QUIZ!</p>
                 </div>
                 
-                <div class="bg-black border-2 border-white p-4 mb-2 transform skew-x-[-2deg]">
+                <div class="bg-black border-4 border-red-600 p-4 mb-2 transform skew-x-[-2deg]">
                     <p class="font-bold text-white text-lg">${currentQuiz.question}</p>
                 </div>
 
-                <button onclick="checkAnswer('a')" class="btn-persona p-4 text-left border-gray-400"><span class="font-bold text-sm">A. ${currentQuiz.a}</span></button>
-                <button onclick="checkAnswer('b')" class="btn-persona p-4 text-left border-gray-400"><span class="font-bold text-sm">B. ${currentQuiz.b}</span></button>
-                <button onclick="checkAnswer('c')" class="btn-persona p-4 text-left border-gray-400"><span class="font-bold text-sm">C. ${currentQuiz.c}</span></button>
+                <button onclick="checkAnswer('a')" class="btn-persona p-4 text-left border-gray-400 group">
+                    <span class="font-bold text-sm text-red-600 group-hover:text-white mr-2">A.</span> 
+                    <span class="text-black group-hover:text-white font-bold">${currentQuiz.a}</span>
+                </button>
+                
+                <button onclick="checkAnswer('b')" class="btn-persona p-4 text-left border-gray-400 group mt-2">
+                    <span class="font-bold text-sm text-red-600 group-hover:text-white mr-2">B.</span> 
+                    <span class="text-black group-hover:text-white font-bold">${currentQuiz.b}</span>
+                </button>
+                
+                <button onclick="checkAnswer('c')" class="btn-persona p-4 text-left border-gray-400 group mt-2">
+                    <span class="font-bold text-sm text-red-600 group-hover:text-white mr-2">C.</span> 
+                    <span class="text-black group-hover:text-white font-bold">${currentQuiz.c}</span>
+                </button>
                 
                 <button onclick="renderMainMenu()" class="mt-4 text-gray-400 underline font-bold hover:text-white text-right">BACK</button>
             `;
@@ -246,7 +272,7 @@
                 playerHp -= 20;
                 if(playerHp < 0) playerHp = 0;
                 
-                document.getElementById('player-hp').style.width = (playerHp / maxPlayerHp * 100) + '%';
+                updateHpUI();
                 
                 dialogMain.innerHTML = `「間違い！隙だらけだ！」<br><span class='text-blue-400'>スライムの反撃！20 ダメージ！</span>`;
                 dialogRomaji.innerHTML = "(Machigai! Suki darake da! - Salah! Pertahananmu terbuka lebar!)";
@@ -286,37 +312,34 @@
         }
 
         function triggerWin() {
-    isGameOver = true;
-    
-    playerGold += 200;
-    localStorage.setItem('playerGold', playerGold);
-    
-    // --- TAMBAHKAN BARIS INI ---
-    localStorage.setItem('playerHp', playerHp); 
-    // ---------------------------
-
-    document.getElementById('gold-display').innerText = playerGold;
-
-    const newWord = "倒す (Taosu)";
-    if(!lootedWords.includes(newWord)) {
-        lootedWords.push(newWord);
-        localStorage.setItem('lootedWords', JSON.stringify(lootedWords));
-    }
-
-    const menu = document.getElementById('action-menu');
-    menu.innerHTML = `
-        <div class="bg-white border-4 border-black p-8 text-center transform skew-x-[2deg] shadow-[8px_8px_0px_#ffffff] mt-4">
-            <h1 class="marker-font text-5xl md:text-6xl mb-4 text-black">VICTORY!</h1>
-            <p class="pixel-font text-[10px] mb-2 text-gray-600">REWARDS:</p>
-            <p class="marker-font text-yellow-500 text-2xl">+ 200 GOLD</p>
-            <p class="marker-font text-blue-600 text-xl mt-2">+ KOTOBA: 倒す (Taosu / Mengalahkan)</p>
+            isGameOver = true;
             
-            <a href="quest3.html" class="inline-block mt-8 bg-black text-white px-8 py-4 border-2 border-white hover:bg-red-600 transition-colors marker-font text-xl transform skew-x-[-10deg]">
-                NEXT: GOBLIN CAVE ▶
-            </a>
-        </div>
-    `;
-}
+            playerGold += 200;
+            localStorage.setItem('playerGold', playerGold);
+            localStorage.setItem('playerHp', playerHp); 
+            
+            document.getElementById('gold-display').innerText = playerGold;
+
+            const newWord = "倒す (Taosu)";
+            if(!lootedWords.includes(newWord)) {
+                lootedWords.push(newWord);
+                localStorage.setItem('lootedWords', JSON.stringify(lootedWords));
+            }
+
+            const menu = document.getElementById('action-menu');
+            menu.innerHTML = `
+                <div class="bg-white border-4 border-black p-8 text-center transform skew-x-[2deg] shadow-[8px_8px_0px_#ffffff] mt-4">
+                    <h1 class="marker-font text-5xl md:text-6xl mb-4 text-black">VICTORY!</h1>
+                    <p class="pixel-font text-[10px] mb-2 text-gray-600">REWARDS:</p>
+                    <p class="marker-font text-yellow-500 text-2xl">+ 200 GOLD</p>
+                    <p class="marker-font text-blue-600 text-xl mt-2">+ KOTOBA: 倒す (Taosu / Mengalahkan)</p>
+                    
+                    <a href="quest3.html" class="inline-block mt-8 bg-black text-white px-8 py-4 border-2 border-white hover:bg-red-600 transition-colors marker-font text-xl transform skew-x-[-10deg]">
+                        NEXT: GOBLIN CAVE ▶
+                    </a>
+                </div>
+            `;
+        }
     </script>
 </body>
 </html>

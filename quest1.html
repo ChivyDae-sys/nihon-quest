@@ -3,24 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nihon-Quest: Armory Shop</title>
+    <title>Nihon-Quest: Quest 1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Permanent+Marker&family=Inter:wght@900&display=swap" rel="stylesheet">
     <style>
         :root { --p5-red: #d31212; --p5-black: #000000; --p5-white: #ffffff; --p5-gold: #ffd700; }
         body { background-color: var(--p5-black); color: var(--p5-white); font-family: 'Inter', sans-serif; overflow-x: hidden; }
-        .persona-bg { background: linear-gradient(135deg, #000 0%, #1a0000 100%); background-attachment: fixed; }
+        
+        /* Tema Gelap & Miring */
+        .persona-bg { background: linear-gradient(135deg, #050000 0%, #150000 100%); background-attachment: fixed; }
+        .bg-lines { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(45deg, #000, #000 10px, #050000 10px, #050000 20px); z-index: -1; }
+        
         .pixel-font { font-family: 'Press Start 2P', cursive; }
         .marker-font { font-family: 'Permanent Marker', cursive; }
-        .persona-border { border: 4px solid var(--p5-white); transform: skew(-2deg); box-shadow: 8px 8px 0px var(--p5-red); }
-        .btn-persona { background-color: var(--p5-white); color: var(--p5-black); font-weight: 900; transform: skew(-5deg); transition: all 0.2s ease; border-left: 10px solid var(--p5-red); border-bottom: 4px solid #999;}
-        .btn-persona:hover { background-color: var(--p5-red); color: var(--p5-white); transform: skew(-5deg) scale(1.05); padding-left: 1.5rem; }
+        
+        /* Kotak UI Miring */
+        .persona-border { border: 4px solid var(--p5-red); transform: skew(-2deg); box-shadow: 8px 8px 0px rgba(211, 18, 18, 0.5); }
+        .btn-persona { background-color: var(--p5-white); color: var(--p5-black); font-weight: 900; transform: skew(-5deg); transition: all 0.2s ease; border-left: 10px solid var(--p5-red); border-bottom: 4px solid #555; }
+        .btn-persona:hover { background-color: var(--p5-red); color: var(--p5-white); transform: skew(-5deg) scale(1.05); padding-left: 1.5rem; border-color: #330000; box-shadow: 0 0 15px var(--p5-red); }
+        
         .gold-box { background-color: var(--p5-black); border: 2px solid var(--p5-gold); transform: skew(-10deg); box-shadow: 4px 4px 0px var(--p5-gold); }
-        .inventory-box { border: 2px dashed var(--p5-white); background: rgba(0,0,0,0.8); }
+        .inventory-box { border: 2px dashed var(--p5-red); background: rgba(0,0,0,0.8); }
+        
+        /* Bar HP Miring */
+        .bar-container { background: #333; height: 12px; transform: skew(-10deg); border: 2px solid white; position: relative; }
+        .hp-fill { width: 100%; height: 100%; background: var(--p5-red); box-shadow: 0 0 10px var(--p5-red); transition: width 0.3s; }
+
+        /* Animasi */
+        .npc-float { animation: float 3s infinite alternate ease-in-out; }
+        @keyframes float { 0% { transform: translateY(0); } 100% { transform: translateY(-10px); } }
         
         .shake { animation: shake 0.3s; }
         @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 40% { transform: translate(3px, 2px) rotate(-1deg); } 100% { transform: translate(1px, -1px) rotate(0deg); } }
-
+        
         /* ANIMASI TRANSISI STAGE 1 */
         #stage-transition {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -29,60 +44,72 @@
             animation: fadeOutStage 1s ease-in-out 2.5s forwards; pointer-events: none;
         }
         @keyframes fadeOutStage { 0% { opacity: 1; visibility: visible; } 100% { opacity: 0; visibility: hidden; } }
+        
         .glitch-text { text-shadow: 3px 0 red, -3px 0 blue; animation: glitch 0.3s infinite; }
         @keyframes glitch { 0% { transform: translate(0) } 20% { transform: translate(-2px, 2px) } 40% { transform: translate(-2px, -2px) } 60% { transform: translate(2px, 2px) } 80% { transform: translate(2px, -2px) } 100% { transform: translate(0) } }
     </style>
 </head>
 <body class="persona-bg p-6 md:p-12">
-    
+
     <div id="stage-transition">
         <h1 class="marker-font text-6xl md:text-8xl text-white mb-4 glitch-text transform -skew-x-12">STAGE 1</h1>
         <h2 class="pixel-font text-sm md:text-lg text-red-600 tracking-widest border-y-2 border-red-600 py-2">THE AWAKENING</h2>
     </div>
 
-    <header class="max-w-5xl mx-auto mb-12 flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-4 text-black transform -rotate-1 shadow-[10px_10px_0px_#d31212]">
-        <div class="flex items-center gap-4">
-            <a href="index.html" class="bg-black text-white px-4 py-2 marker-font text-sm transform -skew-x-12 hover:bg-red-600 transition-colors border-2 border-transparent hover:border-black shadow-[4px_4px_0px_#d31212]">
-                ◀ HOME
-            </a>
-            <div class="flex flex-col">
-                <span class="pixel-font text-[8px] text-red-600 mb-1">STAGE 1 | QUEST 1</span>
-                <h1 class="marker-font text-2xl md:text-3xl uppercase tracking-tighter">ARMORY SHOP</h1>
-            </div>
+    <div class="bg-lines"></div>
+
+    <header class="max-w-5xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-start md:items-center bg-black border-4 border-white p-4 text-white transform rotate-1 shadow-[10px_10px_0px_#d31212]">
+        <div class="flex flex-col ml-2">
+            <span class="pixel-font text-[8px] text-red-500 mb-1">QUEST 1: FORGING A PATH</span>
+            <h1 class="marker-font text-2xl md:text-3xl uppercase tracking-tighter">THE ARMORY SHOP</h1>
         </div>
         
-        <div class="flex gap-4 items-end mt-4 md:mt-0">
-            <div class="gold-box px-4 py-2 text-white text-right w-32">
+        <div class="flex flex-wrap gap-4 items-end mt-4 md:mt-0">
+            <div class="w-32 md:w-48">
+                <p class="pixel-font text-[10px] mb-1 text-gray-300">HP <span id="hp-text-header" class="text-[8px] text-gray-500">(100/100)</span></p>
+                <div class="bar-container"><div id="player-hp" class="hp-fill" style="width: 100%"></div></div>
+            </div>
+            <div class="gold-box px-4 py-2 text-white text-right w-24">
                 <p class="pixel-font text-[8px] text-yellow-400 mb-1">GOLD</p>
                 <p id="gold-display" class="marker-font text-xl text-yellow-400">---</p>
             </div>
         </div>
     </header>
 
-    <main class="max-w-5xl mx-auto grid lg:grid-cols-3 gap-8">
+    <main class="max-w-5xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
         
-        <div class="lg:col-span-2 space-y-6">
-            <div class="persona-border bg-black p-8 relative min-h-[200px]">
-                <div class="absolute -top-6 left-6 bg-red-600 px-4 py-1 marker-font text-xl skew-x-[-15deg]">KAJIYA-SAN</div>
-                <div class="mt-4">
-                    <p id="dialog-main" class="text-2xl font-bold leading-relaxed mb-4">「いらっしゃいませ！武器を作りたいですか？」</p>
-                    <p id="dialog-romaji" class="text-gray-400 italic text-sm">"Irasshaimase! Buki o tsukuritai desu ka? - Selamat datang! Ingin membuat senjata?"</p>
+        <div class="flex flex-col items-center justify-center space-y-4">
+            <div class="relative mt-8 flex flex-col items-center">
+                <div class="w-64 h-64 bg-red-900 rounded-full absolute top-10 -z-10 mix-blend-screen blur-3xl opacity-60"></div>
+                
+                <img src="blacksmith.webp" alt="The Blacksmith" class="npc-float w-56 h-56 md:w-64 md:h-64 object-contain drop-shadow-[0_0_25px_rgba(211,18,18,0.7)] z-10">
+                
+                <div class="bg-red-700 text-black marker-font px-4 py-1 rotate-3 border-2 border-black mt-2 w-64 text-center shadow-[4px_4px_0px_#000] z-20">
+                    THE BLACKSMITH
                 </div>
             </div>
+            
+            <div class="w-full persona-border bg-black p-6 relative mt-4">
+                <div class="absolute -top-4 left-4 bg-white text-red-800 font-black px-3 py-1 marker-font text-lg skew-x-[-10deg]">BLACKSMITH LOG</div>
+                <p id="dialog-main" class="text-xl font-black mt-2 leading-relaxed text-red-100">「いらっしゃいませ！武器を作りたいですか？」</p>
+                <p id="dialog-romaji" class="text-red-300 italic text-sm mt-1">(Irasshaimase! Buki o tsukuritai desu ka? - Selamat datang! Ingin membuat senjata?)</p>
+            </div>
 
-            <div class="inventory-box p-4 transform rotate-1 mt-6">
-                <h3 class="marker-font text-2xl mb-2 text-red-500">BACKPACK (INVENTORY)</h3>
-                <div id="inventory-list" class="flex gap-4">
+            <div class="inventory-box w-full p-4 transform -rotate-1 mt-2">
+                <h3 class="pixel-font text-[10px] mb-2 text-red-500">BACKPACK (INVENTORY)</h3>
+                <div id="inventory-list" class="flex gap-3 flex-wrap">
                     <p class="text-gray-500 italic text-sm">Tas masih kosong...</p>
                 </div>
             </div>
         </div>
 
-        <div id="action-menu" class="flex flex-col gap-4 justify-center">
+        <div id="action-menu" class="grid grid-cols-1 gap-4">
             </div>
+
     </main>
 
     <script>
+        // --- BGM SYSTEM ---
         const bgm = new Audio('bgm.mp3');
         bgm.loop = true; 
         function handleBGM() {
@@ -96,6 +123,7 @@
         window.addEventListener('load', handleBGM);
         window.addEventListener('click', () => { if (bgm.paused && localStorage.getItem('playMusic') === 'true') bgm.play(); }, { once: true });
 
+        // --- LOAD DATA ---
         let playerName = localStorage.getItem('playerName') || 'HERO';
         let playerGold = 1000;
         let inventory = [];
@@ -115,31 +143,34 @@
             if (inventory.length > 0) {
                 invList.innerHTML = '';
                 inventory.forEach(item => {
-                    invList.innerHTML += `<div class="bg-white text-black font-bold px-4 py-2 transform skew-x-12 shadow-[2px_2px_0px_#d31212]">🗡️ ${item}</div>`;
+                    invList.innerHTML += `<div class="bg-white text-black font-bold px-3 py-1 text-sm transform skew-x-6 border border-black shadow-[2px_2px_0px_#d31212]">🗡️ ${item}</div>`;
                 });
             } else {
                 invList.innerHTML = '<p class="text-gray-500 italic text-sm">Tas masih kosong...</p>';
             }
         }
 
+        // --- RENDER MENU CRAFTING ---
         function renderMainMenu() {
             const menu = document.getElementById('action-menu');
             menu.innerHTML = `
-                <h2 class="marker-font text-3xl text-red-600 mb-2 italic">TAKE YOUR TIME...</h2>
+                <div class="bg-red-900 p-2 transform -skew-x-12 inline-block mb-2 shadow-[4px_4px_0px_#ffffff]">
+                    <p class="marker-font text-2xl px-2 text-white">WHAT WILL YOU DO?</p>
+                </div>
                 
-                <button onclick="openCraftMenu()" class="btn-persona p-4 text-left group flex flex-col">
-                    <span class="pixel-font text-xs">01. つくる (Tsukuru)</span>
+                <button onclick="openCraftMenu()" class="btn-persona p-5 text-left group flex flex-col">
+                    <span class="pixel-font text-sm">01. つくる (Tsukuru)</span>
                     <span class="font-bold text-gray-500 group-hover:text-black mt-1">- Tempa Katana (Biaya: 200 G)</span>
                 </button>
                 
-                <button onclick="shopAction('ask')" class="btn-persona p-4 text-left group flex flex-col">
-                    <span class="pixel-font text-xs">02. はなす (Hanasu)</span>
-                    <span class="font-bold text-gray-500 group-hover:text-black mt-1">- Ngobrol dengan Kajiya</span>
+                <button onclick="shopAction('ask')" class="btn-persona p-5 text-left group flex flex-col mt-2">
+                    <span class="pixel-font text-sm">02. はなす (Hanasu)</span>
+                    <span class="font-bold text-gray-500 group-hover:text-black mt-1">- Ngobrol dengan The Blacksmith</span>
                 </button>
                 
-                <a href="quest2.html" class="btn-persona border-red-600 p-4 text-center block font-bold hover:bg-black group shadow-[4px_4px_0px_#d31212] mt-4">
-                    <span class="pixel-font text-sm text-red-600 group-hover:text-red-500">▶ NEXT STAGE</span>
-                    <span class="block mt-1 text-gray-500 text-xs">Pergi ke Maboroshi Forest</span>
+                <a href="quest2.html" class="btn-persona border-red-600 p-5 text-left font-bold hover:bg-black group mt-4 flex flex-col">
+                    <span class="pixel-font text-sm text-red-600 group-hover:text-red-500">▶ EXIT TOWNGATE</span>
+                    <span class="block mt-1 text-gray-500 group-hover:text-gray-400">Lanjutkan perjalanan (Quest 2)</span>
                 </a>
             `;
         }
@@ -181,18 +212,18 @@
                 </div>
                 
                 <button onclick="executeCraft('wrong1')" class="btn-persona p-4 text-left border-gray-400 group">
-                    <span class="font-bold">A. 水 (Mizu) + 木 (Ki)</span>
-                    <span class="block text-xs text-gray-400 mt-1">(Air & Kayu)</span>
+                    <span class="font-bold text-lg group-hover:text-white"><span class="text-blue-600">A.</span> 水 (Mizu) + 木 (Ki)</span>
+                    <span class="block text-xs text-gray-400 mt-1 group-hover:text-white">(Air & Kayu)</span>
                 </button>
                 
-                <button onclick="executeCraft('correct')" class="btn-persona p-4 text-left border-gray-400 group">
-                    <span class="font-bold">B. 鉄 (Tetsu) + 火 (Hi)</span>
-                    <span class="block text-xs text-gray-400 mt-1">(Besi & Api)</span>
+                <button onclick="executeCraft('correct')" class="btn-persona p-4 text-left border-gray-400 group mt-2">
+                    <span class="font-bold text-lg group-hover:text-white"><span class="text-blue-600">B.</span> 鉄 (Tetsu) + 火 (Hi)</span>
+                    <span class="block text-xs text-gray-400 mt-1 group-hover:text-white">(Besi & Api)</span>
                 </button>
                 
-                <button onclick="executeCraft('wrong2')" class="btn-persona p-4 text-left border-gray-400 group">
-                    <span class="font-bold">C. 金 (Kin) + 土 (Tsuchi)</span>
-                    <span class="block text-xs text-gray-400 mt-1">(Emas & Tanah)</span>
+                <button onclick="executeCraft('wrong2')" class="btn-persona p-4 text-left border-gray-400 group mt-2">
+                    <span class="font-bold text-lg group-hover:text-white"><span class="text-blue-600">C.</span> 金 (Kin) + 土 (Tsuchi)</span>
+                    <span class="block text-xs text-gray-400 mt-1 group-hover:text-white">(Emas & Tanah)</span>
                 </button>
 
                 <button onclick="renderMainMenu()" class="mt-4 text-gray-400 underline font-bold hover:text-white text-right">CANCEL</button>
@@ -226,7 +257,7 @@
                 document.getElementById('gold-display').innerText = playerGold;
 
                 dialogMain.innerHTML = `「ドカーン！<span class='text-red-500'>間違った材料だ！</span>」`;
-                dialogRomaji.innerHTML = `(Dokaan! Machigatta zairyou da! - BOOM! Bahannya salah! <br><span class='text-sm text-red-500'>*Tungku meledak. Kamu rugi 50 Gold untuk biaya ganti rugi bengkel.*</span>)`;
+                dialogRomaji.innerHTML = `(Dokaan! Machigatta zairyou da! - BOOM! Bahannya salah! <br><span class='text-sm text-red-500'>*Tungku meledak. Kamu rugi 50 Gold.*</span>)`;
             }
             renderMainMenu();
         }

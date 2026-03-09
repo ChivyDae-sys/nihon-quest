@@ -44,7 +44,7 @@
             100% { transform: skew(-10deg) translate(0); } 
         }
 
-        /* Tombol Menu ala Phantom (Sudah di-Fix bebas Bug Hover!) */
+        /* Tombol Menu ala Phantom */
         .menu-btn { 
             background-color: transparent; 
             color: var(--p5-white); 
@@ -140,7 +140,7 @@
             
             <p class="pixel-font text-[10px] text-red-500 mb-2 w-full max-w-[400px] text-left">ENTER AGENT CODENAME:</p>
             
-            <input type="text" id="player-codename" class="name-input" placeholder="Add Player Name" maxlength="12" autocomplete="off">
+            <input type="text" id="player-codename" class="name-input" placeholder="HERO" maxlength="12" autocomplete="off">
             
             <button onclick="startGame()" class="menu-btn group">
                 <span class="text-xs text-red-500 mr-2 group-hover:text-black">></span> ENTER MISSION
@@ -154,13 +154,14 @@
     </main>
 
     <script>
-        // --- SISTEM BGM ---
+        // --- SISTEM BGM DENGAN PERSISTENSI WAKTU ---
         const bgmAudio = new Audio('bgm.mp3'); 
         bgmAudio.loop = true;
         
-        // Memaksa BGM mati (OFF) setiap kali layar judul dibuka
+        // Memaksa BGM mati (OFF) setiap kali layar judul dibuka dari awal
         let isMusicPlaying = false; 
         localStorage.setItem('playMusic', 'false');
+        localStorage.setItem('musicTime', '0'); // Waktu lagu di-reset ke 0
 
         function updateBgmUI() {
             const bgmText = document.getElementById('bgm-text');
@@ -171,12 +172,26 @@
             }
         }
 
+        // Interval untuk selalu menyimpan detik lagu jika sedang ON
+        setInterval(() => {
+            if (isMusicPlaying && !bgmAudio.paused) {
+                localStorage.setItem('musicTime', bgmAudio.currentTime);
+            }
+        }, 500); 
+
+        window.addEventListener('beforeunload', () => {
+            if (isMusicPlaying && !bgmAudio.paused) {
+                localStorage.setItem('musicTime', bgmAudio.currentTime);
+            }
+        });
+
         function toggleBGM() {
             isMusicPlaying = !isMusicPlaying; 
             localStorage.setItem('playMusic', isMusicPlaying); 
             
             if (isMusicPlaying) {
-                // Memulai lagu dan menangani error jika diblokir browser
+                let savedTime = parseFloat(localStorage.getItem('musicTime')) || 0;
+                bgmAudio.currentTime = savedTime;
                 bgmAudio.play().catch(e => {
                     alert('Sistem: Browser memblokir audio. Silakan klik layar sekali lagi!');
                 });
@@ -186,7 +201,6 @@
             updateBgmUI();
         }
 
-        // Panggil untuk memastikan UI menampilkan OFF di awal
         updateBgmUI();
 
         // --- SISTEM MENU TRANSISI ---
@@ -205,15 +219,23 @@
             mainMenu.classList.remove('hidden'); 
         }
 
-        // --- SISTEM MULAI GAME ---
+        // --- BUG FIX: MODAL AWAL 1000 GOLD ---
         function startGame() {
             let enteredName = inputField.value.trim();
             if (enteredName === "") {
                 enteredName = "HERO";
             }
 
+            // 1. Simpan Nama
             localStorage.setItem('playerName', enteredName);
 
+            // 2. HARD RESET STATUS (Kasih modal 1000 Gold!)
+            localStorage.setItem('playerGold', '1000'); // <--- INI UDAH JADI 1000
+            localStorage.setItem('playerHp', '100');
+            localStorage.setItem('maxPlayerHp', '100');
+            localStorage.setItem('inventory', JSON.stringify([])); 
+
+            // Animasi transisi
             document.body.style.transition = "opacity 0.8s ease";
             document.body.style.opacity = "0";
             
@@ -222,13 +244,19 @@
             }, 800);
         }
 
-        // --- FUNGSI TOMBOL LAINNYA ---
+        // --- INTEGRASI WHATSAPP REPORT & FEEDBACK ---
         function openBugReport() {
-            alert("Sistem Radar: Sedang menyiapkan formulir laporan bug... (Masukkan link Google Forms nanti)");
+            const nomorWA = "6285848966250"; // Jangan lupa ganti nomornya ya Mas
+            const pesan = "Lapor sir! Saya nemu bug di Nihon-Quest nih. \n\nDetail Bug: ";
+            const linkWA = `https://wa.me/${6285848966250}?text=${encodeURIComponent(pesan)}`;
+            window.open(linkWA, '_blank');
         }
 
         function openFeedback() {
-            alert("Sistem Radar: Menghubungkan ke kotak saran... (Masukkan link Google Forms nanti)");
+            const nomorWA = "6285848966250"; // Jangan lupa ganti nomornya ya Mas
+            const pesan = "Oi Developer! gua mau ngasih kritik & saran buat game Nihon-Quest: \n\nSaran saya: ";
+            const linkWA = `https://wa.me/${6285848966250}?text=${encodeURIComponent(pesan)}`;
+            window.open(linkWA, '_blank');
         }
     </script>
 </body>
